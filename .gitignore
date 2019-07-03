@@ -1,0 +1,4 @@
+# .txt files have (most likely) been scraped from the internet and converted.
+*.txt
+
+__pycache__
