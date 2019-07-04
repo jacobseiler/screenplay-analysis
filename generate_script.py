@@ -119,8 +119,6 @@ if __name__ == "__main__":
         fname_out = f"/home/jseiler/screenplay-analysis/scripts/season-{season_num}-episodes"
         episode_names = generate_episode_names(url, fname_out)
 
-        episode_names = [episode_names[0]]
-
         # Then go through each episode and grab its scripts.
         for episode_num, episode_name in enumerate(episode_names):
 

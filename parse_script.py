@@ -8,15 +8,31 @@ import numpy as np
 
 def normalize_name(character_name, allowed_double_names=None):
 
+    import string
     # First be consistent and capitalize the first letter in all names of a character.
-    character_name = character_name.title()
+    # Use `capwords` rather than `title` because `title` capitalizes letters after
+    # apostrophes.
+    character_name = string.capwords(character_name)
 
     # There are only a handful of names we (by default) allow to be multiple words.
     if allowed_double_names is None:
         allowed_double_names = [
             "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
-            "Waymar Royce"
+            "Waymar Royce", "Grand Maester Pycelle", "Street Urchin",
+            "Kings Landing Baker", "Hot Pie", "Ser Alliser",
+            "Maryn Trant", "King Joffrey", "King's Landing Page",
+            "Wine Merchant", "Stable Boy", "Old Nan", "Little Bird"
         ]
+
+    # Populate a bunch of <House> <scout/warrior/guards>.
+    houses = ["Lannister", "Stark", "Tyrell", "Baratheon", "Kings", "Nights Watch", "Kings Landing"]
+    NPC_classes = ["Scout", "Warrior", "Guards", "Bannerman", "Bannermen", "Guard", "Boy"]
+    random_NPCs = []
+    for house in houses:
+        for NPC_class in NPC_classes:
+            random_NPCs.append(f"{house} {NPC_class}")
+
+    allowed_double_names = allowed_double_names + random_NPCs
 
     # Now if a character's name is not allowed to be double, we will split it into two and
     # take the first name.
@@ -27,7 +43,11 @@ def normalize_name(character_name, allowed_double_names=None):
     name_map = {
         "Sandor": "The Hound",
         "Luwin": "Maester Luwin",
-        "Drogo": "Khal Drogo"
+        "Drogo": "Khal Drogo",
+        "Pycelle": "Grand Maester Pycelle",
+        "King Joffrey": "Joffrey",
+        "Samwell": "Sam",
+        "Alliser": "Ser Alliser"
     }
 
     if character_name in name_map:
@@ -55,16 +75,6 @@ def parse_episode(fname, episode, debug=False):
             # character).
             parse_character_line(line, episode, debug=debug)
 
-    #episode.normalize_characters()
-
-    """
-    for character in episode.characters.keys():
-        print("{0} has {1} lines".format(character, len(episode.characters[character].lines)))
-        print(episode.characters[character].lines)
-        print("")
-    """
-
-
 
 def parse_character_line(line, episode, debug=False):
 
@@ -86,7 +96,6 @@ def parse_character_line(line, episode, debug=False):
     # different one.  Hence let's normalize the name so it is consistent across episodes
     # and seasons.
     character_name = normalize_name(character_name)
-
 
     # episode.characters is a dict["character_name": Character Class Instance].
     # So let's check if we have already instantiated this character. If not, initialize.
@@ -217,22 +226,3 @@ def regex_season_one_episode_greater_one_line(line, debug=False):
     spoken_line = spoken_line.strip()
 
     return character_name, spoken_line
-
-
-if __name__ == "__main__":
-
-
-    seasons = [1]
-    episodes = [2]
-    debug=True
-
-    for season_num in seasons:
-        for episode_num in episodes:
-            episode = Episode(season_num, episode_num)
-            txt_file_path = f"/home/jseiler/screenplay-analysis/scripts/s{season_num:02}e{episode_num:02}.txt"
-
-
-            parse_episode(txt_file_path, episode, debug=debug)
-
-            episode.summarise_episode()
-

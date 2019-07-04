@@ -32,3 +32,75 @@ New: LUWIN: It’s Maester Luwin, my lord.
 Line 569: Previous did not include Catelyn Stark's line. Added extra line...
 "**Catelyn Stark:** I know your sigil as well, the Twin Towers of Frey.  How fairs your lord, Ser?"
 Line 570: Knight of the House Frey moved down to this line as a result.
+
+## Episode 7
+
+
+This episode is a huge mess. Instead of having single lines being on a single line, the formatter put them across multiple lines.  I've gone through and moved all lines spoken by the same person to the single line.
+
+Line 585:
+Here Jon and Sam say their vows. Due to formatting, they are all spaced on different lines. I will split them into just two lines.
+
+Line 597:
+Old: **Fellow Night's Watch brothers:** Well done. Well done.
+New: **Nights Watch Warrior:** Well done. Well done.
+
+## Episode 8
+
+Need to sit down and rewrite this.
+
+Line 183:
+Old: **Nights Watch brother:** Come on, move 'em out.
+New: **Nights Watch Warrior:** Come on, move 'em out.
+
+I've adjusted the 'subtitles' of the Dothraki to be normal.
+Line 330:
+Old: **Mago:** _A Khal who takes orders from a foreign whore is no Khal._
+New: **Mago:** A Khal who takes orders from a foreign whore is no Khal.
+
+## Episode 9
+
+For some fucking reason, some "I"s have been listed as "l"s...
+
+For consistency, just going to rename a bunch of 'random Night's Watcher to 'Nights Watch Warrior'
+Line 128, 129 130 all changed to 'Nights Watch Warrior'.
+
+Line 486:
+Old: **Grand Maester Pycelle** **:** As we sin, so do we suffer. This man has confessed his crimes in sight of Gods and men. The Gods are just but beloved Baelor taught us they can also be merciful. What is to be done with this traitor, Your Grace?
+New: **Grand Maester Pycelle:** As we sin, so do we suffer. This man has confessed his crimes in sight of Gods and men. The Gods are just but beloved Baelor taught us they can also be merciful. What is to be done with this traitor, Your Grace?
+
+## Episode 10
+
+For some fucking reason, some "I"s have been listed as "l"s...
+
+Line 144:
+Old:  **J** **offrey Baratheon:** That's your Septa there. _(shot of the impaled head of a woman with the traditional Septa headscarf)_ l'll tell you what, l'm going to give you a present. After l raise my armies and kill your traitor brother, l'm going to give you his head as well.
+New :  **Joffrey Baratheon:** That's your Septa there. _(shot of the impaled head of a woman with the traditional Septa headscarf)_ l'll tell you what, l'm going to give you a present. After l raise my armies and kill your traitor brother, l'm going to give you his head as well.
+
+Line 298: Removed sounds made by Sam, Pyp, Grenn.  It opens up a mess of interpretaions.
+Old: **Sam, Pyp, and Grenn:** Hyah! Hyah! Hyah! Hyah!
+New: Deleted.
+
+Line 305:
+Old: **Jon Snow:** l belong with my brother.
+New: **Jon Snow:** I belong with my brother.
+
+Line 311:
+Old: **Jon Snow:** l have to.
+New: **Jon Snow:** I have to.
+
+Line 316:
+Old: **Pyp:** "Night gathers and now my watch begins. lt shall not end until my death. l shall live and die at my post.
+New: **Pyp:** "Night gathers and now my watch begins. It shall not end until my death. I shall live and die at my post.
+
+Line 317:
+Old: **Grenn:** "l am the sword in the darkness – "
+New: **Grenn:** "I am the sword in the darkness �
+
+Handling multiple speaking at once is a pain. Let's split this up into three lines.
+Line 318:
+
+Old: **Sam, Pyp, and Grenn:** __ "l am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. l pledge my life and honor to the Night's Watch, for this night and all nights to come.”
+New: **Sam**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
+New: **Pyp**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
+New: **Grenn**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
