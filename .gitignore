@@ -1,4 +1,6 @@
 # .txt files have (most likely) been scraped from the internet and converted.
 *.txt
+# Keep a record of the manual changes made to the scripts.
+!manual_changes.txt
 
 __pycache__
