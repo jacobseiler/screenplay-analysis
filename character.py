@@ -4,4 +4,3 @@ class Character(object):
 
         self.name = name
         self.lines = []
-        self.line_count = 0

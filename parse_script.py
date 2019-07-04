@@ -2,42 +2,18 @@ from character import Character
 from episode import Episode
 
 import re
-import requests
+
 import numpy as np
-import html2text
 
 
-def generate_txt(url, save_path):
-
-    # Set some options for parsing the HTML to text.
-    parser = html2text.HTML2Text()
-    parser.unicode_snob = True
-    parser.body_width = 0
-    parser.skip_internal_links = True
-    parser.ignore_links = True
-
-    # Now get the HTML page.
-    r = requests.get(url)
-    if r.status_code != 200:
-        print("Encountered error while fetching webpage {0}".format(url))
-        raise RuntimeError
-
-    # Snip out all that HTML nonsense and leave just the text (this will be the script
-    # itself).
-    data = r.text
-    text = parser.handle(data)
-
-    # Now save the trimmed text.
-    fname_out = "{0}/s01e02.txt".format(save_path)
-    with open(fname_out, "w") as f:
-        f.write(text)
-
-
-def parse_txt(fname):
-
-    episode = Episode(1, 1)
+def parse_episode(fname, episode, debug=False):
 
     with open(fname, "r") as f:
+
+        # Strictly speaking I don't need to loop over lines here to get the character
+        # lines. I could instead pass the entire file and use regex to pull out all the
+        # character lines.  However, in future, I will want to pull out scenes
+        # chronologically. Hence it will be useful to iterate line-by-line.
         for line in f:
 
             # Ignore empty lines.
@@ -51,19 +27,23 @@ def parse_txt(fname):
                 continue
 
             # Everything is good. This is a line spoken by a character.
-            parse_character_line(line, episode)
+            parse_character_line(line, episode, debug=debug)
 
     for character in episode.characters.keys():
-        print("{0} has {1} lines".format(character, episode.characters[character].line_count))
+        print("{0} has {1} lines".format(character, len(episode.characters[character].lines)))
         print(episode.characters[character].lines)
         print("")
 
+    episode.summarise_episode()
 
-def parse_character_line(line, episode):
+
+def parse_character_line(line, episode, debug=False):
+
+    if debug:
+        print("Line {0}".format(line))
 
     # A line spoken by a character will start with "**Character name:**".
     # Be careful, sometimes the colon is inside the ** or outside with a space...
-    print("Line {0}".format(line))
 
     # Search for "**<ANYTHING>:**" OR "**<ANYTHING>**:" OR **<ANYTHING>** :".
     # Here '[A-Z]' means we only match actual characters. This allows us to ignore
@@ -72,7 +52,8 @@ def parse_character_line(line, episode):
     reg_exp = re.compile(r"\*\*([A-Z].*)\:\*\*|\*\*([A-Z].*)\*\*\:|\*\*([A-Z].*)\*\* \:", re.IGNORECASE)
     character_line = reg_exp.split(line)  # Split on this search.
 
-    print("Character Line {0}".format(character_line))
+    if debug:
+        print("Character Line {0}".format(character_line))
 
     # Now since we have defined 3 search times, a line spoken by a character will return a
     # list of the form...
@@ -87,8 +68,8 @@ def parse_character_line(line, episode):
     # Otherwise, let's filter out into a list that is [character_name, spoken_line].
     filtered_line = list(filter(None, character_line))
 
-    # Actually sometimes extraneous "****" cause this filtered list to be 3 elements long,
-    # ["*****", character_name, spoke_line]. Check for this.
+    # Actually sometimes extraneous "*...*" cause this filtered list to be 3 elements long,
+    # ["*...*", character_name, spoke_line]. Check for this.
     if len(filtered_line) == 2:
         character_name = filtered_line[0]
         spoken_line = filtered_line[1]
@@ -107,26 +88,22 @@ def parse_character_line(line, episode):
 
     character = episode.characters[character_name]
 
-    # Update the number of lines.
-    character.line_count += 1
-
     # Now there is an annoying "\n" at the end of each line. Eliminate it...
-    spoken_line = spoken_line.split("\n")
+    spoken_line = (spoken_line.split("\n"))[0]
 
     # Still a little bit of white space at the start and end.
-    spoken_line = spoken_line[0].strip()
+    spoken_line = spoken_line.strip()
 
     # Update the spoken line.
     character.lines.append(spoken_line)
 
 
-
 if __name__ == "__main__":
 
-
-    url = "https://genius.com/Game-of-thrones-the-kingsroad-annotated"
-    save_path = "/home/jseiler/screenplay-analysis/scripts"
-    #generate_txt(url, save_path)
-
     txt_file_path = "/home/jseiler/screenplay-analysis/scripts/s01e02.txt"
-    parse_txt(txt_file_path)
+    season_num = 1
+    episode_num = 2
+    episode = Episode(season_num, episode_num)
+
+    debug=False
+    parse_episode(txt_file_path, episode, debug=debug)
