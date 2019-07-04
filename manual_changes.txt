@@ -1,0 +1,34 @@
+# Season 1
+
+## Episode 1
+
+There are some missing semicolons to indicate people are talking.
+
+Line 379:
+Old: ROBERT  Ooh. Show us your muscles. You’ll be a soldier.
+New: ROBERT: Ooh. Show us your muscles. You’ll be a soldier.
+
+Line 525:
+Old: VISERYS  Do you see how long his hair is? When Dothraki are defeated in combat, they cut off their braid so the whole world can see their shame. Khal Drogo has never been defeated. He’s a savage, of course, but he’s one of the finest killers alive. And you will be his queen.
+New: VISERYS:  Do you see how long his hair is? When Dothraki are defeated in combat, they cut off their braid so the whole world can see their shame. Khal Drogo has never been defeated. He’s a savage, of course, but he’s one of the finest killers alive. And you will be his queen.
+
+Line 557:
+Old: DAENERYS  I don’t want to be his queen. I want to go home.
+New: DAENERYS:  I don’t want to be his queen. I want to go home.
+
+Line 673:
+Old: CATELYN  Is this your first time in the North, Your Grace?
+Old: CATELYN:  Is this your first time in the North, Your Grace?
+
+Some people aren't techincally identified as they're knocking on door. But we want to add their counts...
+
+Line 753:
+Old: A VOICE: It’s Maester Luwin, my lord.
+New: LUWIN: It’s Maester Luwin, my lord.
+
+
+## Episode 4
+
+Line 569: Previous did not include Catelyn Stark's line. Added extra line...
+"**Catelyn Stark:** I know your sigil as well, the Twin Towers of Frey.  How fairs your lord, Ser?"
+Line 570: Knight of the House Frey moved down to this line as a result.
