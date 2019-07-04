@@ -6,6 +6,35 @@ import re
 import numpy as np
 
 
+def normalize_name(character_name, allowed_double_names=None):
+
+    # First be consistent and capitalize the first letter in all names of a character.
+    character_name = character_name.title()
+
+    # There are only a handful of names we (by default) allow to be multiple words.
+    if allowed_double_names is None:
+        allowed_double_names = [
+            "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
+            "Waymar Royce"
+        ]
+
+    # Now if a character's name is not allowed to be double, we will split it into two and
+    # take the first name.
+    if character_name not in allowed_double_names:
+        character_name = character_name.split()[0]
+
+    # We also map some names explicitly to others...
+    name_map = {
+        "Sandor": "The Hound",
+        "Luwin": "Maester Luwin",
+        "Drogo": "Khal Drogo"
+    }
+
+    if character_name in name_map:
+        character_name = name_map[character_name]
+
+    return character_name
+
 def parse_episode(fname, episode, debug=False):
 
     with open(fname, "r") as f:
@@ -25,6 +54,8 @@ def parse_episode(fname, episode, debug=False):
             # Parse the line to see if a character spoke it (and add to the appropriate
             # character).
             parse_character_line(line, episode, debug=debug)
+
+    #episode.normalize_characters()
 
     """
     for character in episode.characters.keys():
@@ -49,6 +80,14 @@ def parse_character_line(line, episode, debug=False):
     if character_name is None or spoken_line is None:
         return
 
+    # At this point, the assigned character has been given a line. However,
+    # some scripts name characters slightly differently.  For example, "Cersei" in one
+    # script may be "Cersei Baratheon" in another or "CERSEI LANNISTER" in another
+    # different one.  Hence let's normalize the name so it is consistent across episodes
+    # and seasons.
+    character_name = normalize_name(character_name)
+
+
     # episode.characters is a dict["character_name": Character Class Instance].
     # So let's check if we have already instantiated this character. If not, initialize.
     if character_name not in episode.characters.keys():
@@ -58,6 +97,7 @@ def parse_character_line(line, episode, debug=False):
 
     # Update the spoken line.
     character.lines.append(spoken_line)
+
 
 def regex_character_line(line, episode, debug=False):
 
@@ -102,9 +142,6 @@ def regex_season_one_episode_one_line(line, debug=False):
     if character_name != character_name.upper():
         return None, None
 
-    print("valid")
-    print(character_name)
-
     # The spoken line is the final element of `character_line`.
     spoken_line = character_line[2]
 
@@ -114,16 +151,15 @@ def regex_season_one_episode_one_line(line, debug=False):
     # Still a little bit of white space at the start and end.
     spoken_line = spoken_line.strip()
 
-    print(f"spoken line {spoken_line}")
-
     # The webpage has an alphabet on it for navigation.  Since these letters are capital
     # letters, they've been captured by our method.  In these instances, the
     # `spoke_line` is empty. So if the spoken line is empty, don't count anything.
     if spoken_line == "":
         return None, None
 
-    print(character_name)
-    print(spoken_line)
+    if debug:
+        print(f"Character name {character_name}")
+        print(f"Spoken line {spoken_line}")
 
     return character_name, spoken_line
 
@@ -187,7 +223,7 @@ if __name__ == "__main__":
 
 
     seasons = [1]
-    episodes = [1]
+    episodes = [2]
     debug=True
 
     for season_num in seasons:
