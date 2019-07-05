@@ -97,15 +97,13 @@ def parse_character_line(line, episode, debug=False):
     # and seasons.
     character_name = normalize_name(character_name)
 
-    # episode.characters is a dict["character_name": Character Class Instance].
+    # episode.character_line is a dict["character_name": list of lines spoken].
     # So let's check if we have already instantiated this character. If not, initialize.
-    if character_name not in episode.characters.keys():
-        episode.characters[character_name] = Character(character_name)
-
-    character = episode.characters[character_name]
+    if character_name not in episode.character_lines:
+        episode.character_lines[character_name] = []
 
     # Update the spoken line.
-    character.lines.append(spoken_line)
+    episode.character_lines[character_name].append(spoken_line)
 
 
 def regex_character_line(line, episode, debug=False):

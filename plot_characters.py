@@ -1,3 +1,4 @@
+from character import Character
 from episode import Episode
 from parse_script import parse_episode
 
@@ -62,7 +63,7 @@ def plot_line_count_hist(season, plot_output_path, plot_output_format="png"):
 
             # Maybe the character didn't appear in this episode.
             try:
-                character_lines = episode.characters[character].lines
+                character_lines = episode.character_lines[character]
             except KeyError:
                 character_lines = []
 
@@ -109,7 +110,7 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
 
             # Maybe the character didn't appear in this episode.
             try:
-                character_lines = episode.characters[character].lines
+                character_lines = episode.character_lines[character]
             except KeyError:
                 continue
 
@@ -151,6 +152,17 @@ if __name__ == "__main__":
             #episode.summarise_episode()
 
             season.append(episode)
+
+    # Instead of breaking into episodes, can also distribute as characters.
+    character_names = ["Tyrion"]
+    characters = {}
+
+    for character_name in character_names:
+        character = Character(character_name)
+
+        character.calc_lines_in_episodes(season)
+
+        characters[character_name] = character
 
     # Then let's do some plotting!
 
