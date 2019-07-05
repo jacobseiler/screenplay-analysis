@@ -1,4 +1,5 @@
 # Season 1
+For some fucking reason, some "I"s have been listed as "l"s. I have regexed the instances of single "l"s to be "I"s (using the regex "\sl\s"). I then did a find/replace of "l'm", "l'll" "l've".
 
 ## Episode 1
 
@@ -70,8 +71,6 @@ Old: **Grand Maester Pycelle** **:** As we sin, so do we suffer. This man has co
 New: **Grand Maester Pycelle:** As we sin, so do we suffer. This man has confessed his crimes in sight of Gods and men. The Gods are just but beloved Baelor taught us they can also be merciful. What is to be done with this traitor, Your Grace?
 
 ## Episode 10
-
-For some fucking reason, some "I"s have been listed as "l"s...
 
 Line 144:
 Old:  **J** **offrey Baratheon:** That's your Septa there. _(shot of the impaled head of a woman with the traditional Septa headscarf)_ l'll tell you what, l'm going to give you a present. After l raise my armies and kill your traitor brother, l'm going to give you his head as well.
