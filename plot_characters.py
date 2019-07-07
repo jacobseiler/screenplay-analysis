@@ -1,3 +1,4 @@
+import character_utils
 from character import Character
 from episode import Episode
 from parse_script import parse_episode
@@ -51,26 +52,44 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
                 handle.set_sizes([10.0])
 
 
-def plot_line_count_hist(season, plot_output_path, plot_output_format="png"):
+def plot_line_count_hist(characters, seasons, episodes, plot_output_path,
+                         characters_to_plot=None, plot_output_format="png"):
+
+    if characters_to_plot is None:
+        characters_to_plot = characters.keys()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    characters = ["Tyrion", "Jon", "Robert"]
-    for character_num, character in enumerate(characters):
 
-        for episode in season:
+    for character_name in characters_to_plot:
 
-            # Maybe the character didn't appear in this episode.
-            try:
-                character_lines = episode.character_lines[character]
-            except KeyError:
-                character_lines = []
+        # Allows for easier indexing later.
+        character_lines = characters[character_name].episode_lines
 
-            num_lines = len(character_lines)
-            ax.scatter(episode.episode_num, num_lines, c=colors[character_num])
+        # May not have all seasons/episodes so manually track the number of episodes we've
+        # done.
+        episode_count = 1
 
-        ax.scatter(-50, -50, c=colors[character_num], label=character)
+        for season_num in seasons:
+            for episode_num in episodes:
+
+                key = f"s{season_num:02}e{episode_num:02}"
+
+                # Don't spam the legend; only add a label if it's the first iteration.
+                if episode_count == 1:
+                    label = character_name
+                else:
+                    label = ""
+
+                # Maybe the character didn't appear in this episode.
+                try:
+                    lines_in_ep = len(character_lines[key])
+                except KeyError:
+                    lines_in_ep = 0
+
+                ax.scatter(episode_count, lines_in_ep, label=label)
+                episode_count += 1
 
     ax.set_xlabel(r"$\mathbf{Episode \: Number}$")
     ax.set_ylabel(r"$\mathbf{Number \: Lines}$")
@@ -133,6 +152,8 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
         plt.close()
 
 
+
+
 if __name__ == "__main__":
 
     seasons = [1]
@@ -154,20 +175,14 @@ if __name__ == "__main__":
             season.append(episode)
 
     # Instead of breaking into episodes, can also distribute as characters.
-    character_names = ["Tyrion"]
-    characters = {}
-
-    for character_name in character_names:
-        character = Character(character_name)
-
-        character.calc_lines_in_episodes(season)
-
-        characters[character_name] = character
+    characters = character_utils.init_characters_in_episodes(season)
+    character_utils.determine_lines_per_episode(season, characters)
 
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    plot_line_count_hist(season, "./plots")
+    characters_to_plot = ["Jon", "Tyrion", "Robert"]
+    plot_line_count_hist(characters, seasons, episodes, "./plots", characters_to_plot)
 
     # Wordcloud of the words said by characters.
     plot_wordcloud_character(season, "./plots")

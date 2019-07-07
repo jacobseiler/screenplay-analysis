@@ -103,3 +103,24 @@ Old: **Sam, Pyp, and Grenn:** __ "l am the sword in the darkness, the watcher on
 New: **Sam**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
 New: **Pyp**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
 New: **Grenn**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
+
+
+# Season 3
+
+## Episode 1
+
+Line 946:
+Old: MISSANDEI: Missandei: My master says the Unsullied are not men. Death means nothing to them.
+New: MISSANDEI: My master says the Unsullied are not men. Death means nothing to them.
+
+Line 966:
+Old: Missandei: My master points out that men don't need nipples.
+New: MISSANDEI: My master points out that men don't need nipples.
+
+# Season 4
+
+## Episode 2
+
+Line 41:
+Old: Ramsay: Tansy! Tansy! Tansy!
+New: RAMSAY: Tansy! Tansy! Tansy!

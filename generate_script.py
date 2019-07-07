@@ -1,6 +1,7 @@
 import html2text
 import re
 import requests
+import numpy as np
 
 
 def scrape_html_and_save(url, fname_out, remove_brackets=False):
@@ -111,7 +112,7 @@ def generate_script(url, save_path):
 
 if __name__ == "__main__":
 
-    seasons = [1]
+    seasons = np.arange(2,9)
     for season_num in seasons:
 
         # First find the names of the episodes in this Season.

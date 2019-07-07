@@ -2,9 +2,33 @@ class Episode(object):
 
     def __init__(self, season_num, episode_num):
 
-        self.season_num = season_num
-        self.episode_num = episode_num
-        self.character_lines = {}
+        self._season_num = season_num
+        self._episode_num = episode_num
+        self._character_lines = {}
+
+    @property
+    def season_num(self):
+        return self._season_num
+
+    @season_num.setter
+    def season_num(self, season_num):
+        self._season_num = season_num
+
+    @property
+    def episode_num(self):
+        return self._episode_num
+
+    @episode_num.setter
+    def episode_num(self, episode_num):
+        self._episode_num = episode_num
+
+    @property
+    def character_lines(self):
+        return self._character_lines
+
+    @character_lines.setter
+    def character_lines(self, character_lines):
+        return self._character_lines
 
 
     def summarise_episode(self, verbose=False):
