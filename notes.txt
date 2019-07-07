@@ -1,0 +1,109 @@
+# In this file, we list the formats for the scripts.
+# For each episode, the format for how characters lines are formatted may be different.
+
+# Furthermore, the format that denotes scene changes may also change.
+# NOTE: The idea of a 'scene change' is a nebulous idea. Is a 'scene' the same location (potentially being filmed across multiple storylines)?
+# E.g., Is showing multiple guards running around King's Landing a single 'scene'?
+# In particular, Season 4 Episode 9, The Watch On the Walls, is set ENTIRELY at Castle Black.  Is this a single 'scene'? There are no marks to show a scene change or `cuts` for example.
+
+# For character lines, the key is:
+# "CHARACTER_NAME:" is where the the line is "CHARACTER NAME: <Line>"
+# "**CHARACTER_NAME:**" is where the line is "**CHARACTER_NAME:** <Line>"
+
+
+# For scenes, the key is:
+# SCENE denotes that scene changes are marked with the words 'Scene shifts' or '## TITLE SEQUENCE'
+# DASHES denotes that scene changes are marked with a row of '\- - - - -' OR a row of '\----'.
+# STARS denotes that scene changes are marked with '* * *'.
+# INT/EXT denotes that scene changes are marked with either the word 'INT' or 'EXT' (capitals) or use of the word 'Interior' or 'Exterior'. These words do not appear elsewhere.
+# CUT denotes that scene scene changes are marked with the words 'CUT TO'.
+# INT/EXT/CUT denotes that the scene changes are marked with 'INT' or 'EXT' or 'CUT TO'.
+# ONE_SCENE denotes where the entire episode can be considered a single scene.
+
+
+# Episode specific notes:
+# s02e09 there are a lot of 'cuts' that may not strictly be a different scene. However I feel they're different enough to warrant it.
+
+s01e01 the format is CHARACTER_NAME:
+s01e02 to s01e10 (inclusive), the format is **CHARACTER_NAME:**
+s02e01 to s03e08 (inclusive), the format is CHARACTER_NAME:
+s03e09 the format is **CHARACTER_NAME:**
+s03e10 to  the format is CHARACTER_NAME:
+
+season_num episode_num character_format scene_format
+
+
+1 1 CHARACTER_NAME: SCENE
+1 2 **CHARACTER_NAME:** DASHES
+1 3 **CHARACTER_NAME:** DASHES
+1 3 **CHARACTER_NAME:** DASHES
+1 4 **CHARACTER_NAME:** DASHES
+1 5 **CHARACTER_NAME:** DASHES
+1 6 **CHARACTER_NAME:** DASHES
+1 7 **CHARACTER_NAME:** STARS
+1 8 **CHARACTER_NAME:** STARS
+1 9 **CHARACTER_NAME:** DASHES
+1 10 **CHARACTER_NAME:** DASHES
+2 1 CHARACTER_NAME: INT/EXT
+2 2 CHARACTER_NAME: INT/EXT
+2 3 CHARACTER_NAME: INT/EXT
+2 4 CHARACTER_NAME: INT/EXT/CUT
+2 5 CHARACTER_NAME: INT/EXT/CUT
+2 6 CHARACTER_NAME: INT/EXT
+2 7 CHARACTER_NAME: INT/EXT/CUT
+2 8 CHARACTER_NAME: INT/EXT/CUT
+2 9 CHARACTER_NAME: CUT
+2 10 CHARACTER_NAME: INT/EXT/CUT
+3 1 CHARACTER_NAME: INT/EXT
+3 2 CHARACTER_NAME: INT/EXT/CUT
+3 3 CHARACTER_NAME: INT/EXT/CUT
+3 4 CHARACTER_NAME: INT/EXT/CUT
+3 5 CHARACTER_NAME: INT/EXT/CUT
+3 6 CHARACTER_NAME: INT/EXT/CUT
+3 7 CHARACTER_NAME: INT/EXT/CUT
+3 8 CHARACTER_NAME: INT/EXT/CUT
+3 9 CHARACTER_NAME: DASHES
+3 10 CHARACTER_NAME: INT/EXT/CUT
+4 1 CHARACTER_NAME: INT/EXT/CUT
+4 2 CHARACTER_NAME: INT/EXT/CUT
+4 3 CHARACTER_NAME: INT/EXT/CUT
+4 4 CHARACTER_NAME: INT/EXT/CUT
+4 5 CHARACTER_NAME: INT/EXT
+4 6 CHARACTER_NAME: INT/EXT
+4 7 CHARACTER_NAME: INT/EXT
+4 8 CHARACTER_NAME: CUT
+4 9 CHARACTER_NAME: ONE_SCENE
+4 10 CHARACTER_NAME: CUT
+5 1 CHARACTER_NAME: INT/EXT/CUT
+5 2 CHARACTER_NAME: INT/EXT
+5 3 CHARACTER_NAME: INT/EXT/CUT
+5 4 CHARACTER_NAME: INT/EXT/CUT
+5 5 CHARACTER_NAME: INT/EXT/CUT
+5 6 CHARACTER_NAME: INT/EXT
+5 7 CHARACTER_NAME: INT/EXT
+5 8 CHARACTER_NAME: INT/EXT/CUT
+5 9 CHARACTER_NAME: INT/EXT
+5 10 CHARACTER_NAME: INT/EXT/CUT
+6 1 CHARACTER_NAME: INT/EXT
+6 2 CHARACTER_NAME: INT/EXT
+6 3 CHARACTER_NAME: INT/EXT
+6 4 CHARACTER_NAME: INT/EXT/CUT
+6 5 CHARACTER_NAME: INT/EXT
+6 6 CHARACTER_NAME: INT/EXT
+6 7 CHARACTER_NAME: INT/EXT
+6 8 CHARACTER_NAME: INT/EXT/CUT
+6 9 CHARACTER_NAME: INT/EXT/CUT
+6 10 CHARACTER_NAME: INT/EXT
+7 1 CHARACTER_NAME: INT/EXT
+7 2 CHARACTER_NAME: CUT  <Need to reflag these scene changes>
+7 3 CHARACTER_NAME: CUT
+7 4 CHARACTER_NAME: CUT
+7 5 CHARACTER_NAME: CUT
+7 6 CHARACTER_NAME: CUT
+7 7 CHARACTER_NAME: CUT
+8 1 CHARACTER_NAME: INT/EXT/CUT
+8 2 CHARACTER_NAME: CUT
+8 3 NA
+8 4 CHARACTER_NAME: INT/EXT
+8 5 NA
+8 6 CHARACTER_NAME: INT/EXT
