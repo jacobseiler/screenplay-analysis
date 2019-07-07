@@ -4,6 +4,7 @@ from episode import Episode
 import re
 
 import numpy as np
+import pandas as pd
 
 
 # TODO: These should be ported into their own module and listed as "GoT_Names".
@@ -75,6 +76,14 @@ def normalize_name(character_name, allowed_double_names=None):
 
 def parse_episode(fname, episode, debug=False):
 
+    # There may be some episodes that don't have scripts yet.  Skip these and print a
+    # warning.
+    if episode.character_format == "NONE" and episode.scene_format == "NONE":
+        print(f"Script has been flagged as not existing for s{episode.season_num:02}"
+              f"e{episode.episode_num:02}. Skipping.")
+        return
+
+
     with open(fname, "r") as f:
 
         # Strictly speaking I don't need to loop over lines here to get the character
@@ -126,16 +135,19 @@ def parse_character_line(line, episode, debug=False):
 
 def regex_character_line(line, episode, debug=False):
 
-    # For Season 1, all episodes other than episode 1 follow the same format.
-    if episode.season_num == 1 and episode.episode_num == 1:
-        character_name, spoken_line = regex_season_one_episode_one_line(line, debug=debug)
-    elif episode.season_num == 1 and episode.episode_num > 1:
-        character_name, spoken_line = regex_season_one_episode_greater_one_line(line, debug=debug)
+    if episode.character_format == "**CHARACTER_NAME:**":
+        character_name, spoken_line = parse_stars_character_line(line, debug=debug)
+    elif episode.character_format == "CHARACTER_NAME:":
+        character_name, spoken_line = parse_capital_character_line(line, debug=debug)
+    else:
+        print(f"Character format for s{episode.season_num:02}e{episode.episode_num:02} "
+              "is {episode.character_format}. This is not a recognised format.")
+        raise ValueError
 
     return character_name, spoken_line
 
 
-def regex_season_one_episode_one_line(line, debug=False):
+def parse_capital_character_line(line, debug=False):
 
     # Lines starting with "[" a scene descriptions.
     if line[0] == "[":
@@ -190,7 +202,7 @@ def regex_season_one_episode_one_line(line, debug=False):
 
 
 
-def regex_season_one_episode_greater_one_line(line, debug=False):
+def parse_stars_character_line(line, debug=False):
 
     # Lines starting with "_" a scene descriptions.
     if line[0] == "-":
@@ -242,3 +254,43 @@ def regex_season_one_episode_greater_one_line(line, debug=False):
     spoken_line = spoken_line.strip()
 
     return character_name, spoken_line
+
+
+def parse_all_eps(season_nums, episode_nums, debug=False):
+
+    episodes = []
+
+    # Each episode can be parsed slightly differently. This pandas dataframe will provide
+    # the keys used to determine how to parse each episode.
+    formats = pd.read_csv("./formats.txt", sep=" ", comment="#")
+
+    for season_num in season_nums:
+        for episode_num in episode_nums:
+
+            # Need the formats on how we parse the characters and scenes.
+            episode_format = formats[(formats["season_num"] == season_num) & \
+                                        (formats["episode_num"] == episode_num)]
+
+            # Some seasons don't have episodes 1-10. So try this and skip if we don't
+            # have.
+            try:
+                character_format = str(episode_format["character_format"].values[0])
+                scene_format = str(episode_format["scene_format"].values[0])
+            except IndexError:
+                continue
+
+            key = f"s{season_num:02}e{episode_num:02}"
+            script_path = f"/home/jseiler/screenplay-analysis/scripts/{key}.txt"
+
+            episode = Episode(season_num, episode_num, key, script_path)
+
+            episode.character_format = character_format
+            episode.scene_format = scene_format
+
+            episodes.append(episode)
+
+    # Now go through each episode and parse the script.
+    for episode in episodes:
+        parse_episode(episode.script_path, episode, debug)
+
+    return episodes

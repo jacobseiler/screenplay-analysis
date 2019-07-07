@@ -10,7 +10,6 @@
 # "CHARACTER_NAME:" is where the the line is "CHARACTER NAME: <Line>"
 # "**CHARACTER_NAME:**" is where the line is "**CHARACTER_NAME:** <Line>"
 
-
 # For scenes, the key is:
 # SCENE denotes that scene changes are marked with the words 'Scene shifts' or '## TITLE SEQUENCE'
 # DASHES denotes that scene changes are marked with a row of '\- - - - -' OR a row of '\----'.
@@ -20,19 +19,11 @@
 # INT/EXT/CUT denotes that the scene changes are marked with 'INT' or 'EXT' or 'CUT TO'.
 # ONE_SCENE denotes where the entire episode can be considered a single scene.
 
-
 # Episode specific notes:
 # s02e09 there are a lot of 'cuts' that may not strictly be a different scene. However I feel they're different enough to warrant it.
-
-s01e01 the format is CHARACTER_NAME:
-s01e02 to s01e10 (inclusive), the format is **CHARACTER_NAME:**
-s02e01 to s03e08 (inclusive), the format is CHARACTER_NAME:
-s03e09 the format is **CHARACTER_NAME:**
-s03e10 to  the format is CHARACTER_NAME:
+# s07e02 Need to reflag scene changes.
 
 season_num episode_num character_format scene_format
-
-
 1 1 CHARACTER_NAME: SCENE
 1 2 **CHARACTER_NAME:** DASHES
 1 3 **CHARACTER_NAME:** DASHES
@@ -95,7 +86,7 @@ season_num episode_num character_format scene_format
 6 9 CHARACTER_NAME: INT/EXT/CUT
 6 10 CHARACTER_NAME: INT/EXT
 7 1 CHARACTER_NAME: INT/EXT
-7 2 CHARACTER_NAME: CUT  <Need to reflag these scene changes>
+7 2 CHARACTER_NAME: CUT
 7 3 CHARACTER_NAME: CUT
 7 4 CHARACTER_NAME: CUT
 7 5 CHARACTER_NAME: CUT
@@ -103,7 +94,7 @@ season_num episode_num character_format scene_format
 7 7 CHARACTER_NAME: CUT
 8 1 CHARACTER_NAME: INT/EXT/CUT
 8 2 CHARACTER_NAME: CUT
-8 3 NA
+8 3 NONE NONE
 8 4 CHARACTER_NAME: INT/EXT
-8 5 NA
+8 5 NONE NONE
 8 6 CHARACTER_NAME: INT/EXT

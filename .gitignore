@@ -2,6 +2,6 @@
 *.txt
 # Keep a record of the manual changes made to the scripts.
 !manual_changes.txt
-!notes.txt
+!formats.txt
 
 __pycache__

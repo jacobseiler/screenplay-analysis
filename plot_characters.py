@@ -1,10 +1,11 @@
-import character_utils
+import character_utils as c_utils
+import episode_utils as e_utils
 from character import Character
 from episode import Episode
-from parse_script import parse_episode
+from parse_script import parse_all_eps
 
-import numpy as np
 import matplotlib
+import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
@@ -41,7 +42,7 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
 
     # First adjust the text sizes.
     for t in legend.get_texts():
-        t.set_fontsize("medium")
+        t.set_fontsize(40)
 
     # For scatter plots, we want to increase the marker size.
     if scatter_plot:
@@ -52,54 +53,95 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
                 handle.set_sizes([10.0])
 
 
-def plot_line_count_hist(characters, seasons, episodes, plot_output_path,
+def plot_line_count_hist(characters, episodes, plot_output_path,
                          characters_to_plot=None, plot_output_format="png"):
 
     if characters_to_plot is None:
         characters_to_plot = characters.keys()
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(32, 16))
     ax = fig.add_subplot(111)
 
+    bar_width = 1.0/len(characters_to_plot)
+    max_lines = 0
+    xticklabels = ["DUMMY"]  # For some reason, the 0th label doesn't appear...
 
-    for character_name in characters_to_plot:
+    for character_num, character_name in enumerate(characters_to_plot):
 
         # Allows for easier indexing later.
         character_lines = characters[character_name].episode_lines
 
-        # May not have all seasons/episodes so manually track the number of episodes we've
-        # done.
-        episode_count = 1
+        for ep_count, episode in enumerate(episodes, start=1):
 
-        for season_num in seasons:
-            for episode_num in episodes:
+            key = episode.key
 
-                key = f"s{season_num:02}e{episode_num:02}"
+            # Don't spam the legend; only add a label if it's the first iteration.
+            if ep_count == 1:
+                label = character_name
+            else:
+                label = ""
 
-                # Don't spam the legend; only add a label if it's the first iteration.
-                if episode_count == 1:
-                    label = character_name
-                else:
-                    label = ""
+            # Maybe the character didn't appear in this episode.
+            try:
+                lines_in_ep = len(character_lines[key])
+            except KeyError:
+                lines_in_ep = 0
 
-                # Maybe the character didn't appear in this episode.
-                try:
-                    lines_in_ep = len(character_lines[key])
-                except KeyError:
-                    lines_in_ep = 0
+            # Remember the maximum number of lines.
+            if lines_in_ep > max_lines:
+                max_lines = lines_in_ep
 
-                ax.scatter(episode_count, lines_in_ep, label=label)
-                episode_count += 1
+            # Position on the x-axis is shifted depending on how many characters we
+            # have.
+            x_pos = ep_count + bar_width*character_num
 
-    ax.set_xlabel(r"$\mathbf{Episode \: Number}$")
-    ax.set_ylabel(r"$\mathbf{Number \: Lines}$")
+            ax.bar(x_pos, lines_in_ep, width=bar_width, label=label,
+                color=colors[character_num])
 
-    ax.set_xlim([0.8, 11.2])
-    ax.set_ylim([-1, 65])
+            # Remember the episode numbers so we can add to the x-axis later.
+            if character_num == 0:
+                xticklabels.append(episode.episode_num)
 
-    #ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
+    # The histogram has been made. Now let's go through and add some text to prettify.
 
-    adjust_legend(ax, location="lower left", scatter_plot=True)
+    season_labels, num_eps_season = e_utils.determine_num_episodes_season(episodes)
+
+    for season_idx in range(len(num_eps_season)):
+
+        # Place a dotted line for reference to show the end of Season.
+        # Need to know the total number of episodes before this season, so use cumsum.
+        line_loc = np.cumsum(num_eps_season)[season_idx] + (bar_width*1.5)
+        ax.axvline(line_loc, linestyle='--', linewidth=5)
+
+        # Then place some text.
+        text = season_labels[season_idx]
+
+        # Want the text to be between two seasons.
+        if season_idx == 0:
+            x_loc = num_eps_season[season_idx] / 2.0
+        else:
+            x_loc = (np.cumsum(num_eps_season)[season_idx] + \
+                np.cumsum(num_eps_season)[season_idx-1]) / 2.0
+        # Shift slightly yo.
+        x_loc -= 0.5
+
+        if max_lines > 15:
+            y_loc = max_lines - 10
+        else:
+            y_loc = 5
+
+        ax.text(x_loc, y_loc, text, fontsize=20)
+
+    ax.set_xlabel(r"$\mathbf{Episode \: Number}$", fontsize=40)
+    ax.set_ylabel(r"$\mathbf{Number \: Lines}$", fontsize=40)
+
+    ax.set_xlim([0.8, np.cumsum(num_eps_season)[-1] + 0.2])
+    ax.set_ylim([0, max_lines+5])
+
+    ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+    ax.set_xticklabels(xticklabels)
+
+    adjust_legend(ax, location="upper left", scatter_plot=True)
 
     fig.tight_layout()
 
@@ -156,33 +198,22 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
 
 if __name__ == "__main__":
 
-    seasons = [1]
-    episodes = np.arange(1, 11)
-    debug=False
-    season = []
+    # Parse all the episodes we desire.
+    season_nums = np.arange(1, 9)
+    episode_nums = np.arange(1, 11)
+    debug = False
 
-    # Parse all the scripts in the Season.
-    for season_num in seasons:
-        for episode_num in tqdm(episodes):
-            episode = Episode(season_num, episode_num)
-            txt_file_path = f"/home/jseiler/screenplay-analysis/scripts/s{season_num:02}e{episode_num:02}.txt"
-
-
-            parse_episode(txt_file_path, episode, debug=debug)
-
-            #episode.summarise_episode()
-
-            season.append(episode)
+    episodes = parse_all_eps(season_nums, episode_nums, debug)
 
     # Instead of breaking into episodes, can also distribute as characters.
-    characters = character_utils.init_characters_in_episodes(season)
-    character_utils.determine_lines_per_episode(season, characters)
+    characters = c_utils.init_characters_in_episodes(episodes)
+    c_utils.determine_lines_per_episode(episodes, characters)
 
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    characters_to_plot = ["Jon", "Tyrion", "Robert"]
-    plot_line_count_hist(characters, seasons, episodes, "./plots", characters_to_plot)
+    characters_to_plot = ["Cersei", "Tyrion"]
+    plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
     # Wordcloud of the words said by characters.
     plot_wordcloud_character(season, "./plots")
