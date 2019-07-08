@@ -8,6 +8,12 @@ class Episode(object):
         self._key = key
         self._script_path = script_path
 
+        self._scene_lines = []
+        self._scene_characters = []
+
+        self._characters_spoken_in_scene = []
+        self._lines_spoken_in_scene = []
+
     @property
     def season_num(self):
         return self._season_num
@@ -55,6 +61,22 @@ class Episode(object):
     @property
     def script_path(self):
         return self._script_path
+
+    @property
+    def scene_lines(self):
+        return self._scene_lines
+
+    @scene_lines.setter
+    def scene_lines(self, scene_lines):
+        self._scene_lines = scene_lines
+
+    @property
+    def scene_characters(self):
+        return self._scene_characters
+
+    @scene_characters.setter
+    def scene_characters(self, scene_characters):
+        self._scene_characters = scene_characters
 
 
 

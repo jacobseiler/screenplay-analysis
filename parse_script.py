@@ -22,7 +22,7 @@ def normalize_name(character_name, allowed_double_names=None):
     if allowed_double_names is None:
         allowed_double_names = [
             "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
-            "Waymar Royce", "Grand Maester Pycelle", "Street Urchin",
+            "Waymar", "Grand Maester Pycelle", "Street Urchin",
             "Kings Landing Baker", "Hot Pie", "Ser Alliser",
             "Maryn Trant", "King Joffrey", "King's Landing Page",
             "Wine Merchant", "Stable Boy", "Old Nan", "Little Bird",
@@ -54,6 +54,7 @@ def normalize_name(character_name, allowed_double_names=None):
 
     # We also map some names explicitly to others...
     name_map = {
+        "Royce": "Waymar",
         "Sandor": "The Hound",
         "Hound": "The Hound",
         "Luwin": "Maester Luwin",
@@ -83,12 +84,11 @@ def parse_episode(fname, episode, debug=False):
               f"e{episode.episode_num:02}. Skipping.")
         return
 
-
     with open(fname, "r") as f:
 
         # Strictly speaking I don't need to loop over lines here to get the character
         # lines. I could instead pass the entire file and use regex to pull out all the
-        # character lines.  However, in future, I will want to pull out scenes
+        # character lines.  However, we want to pull out scenes
         # chronologically. Hence it will be useful to iterate line-by-line.
         for line in f:
 
@@ -113,8 +113,21 @@ def parse_character_line(line, episode, debug=False):
     # and their spoken line.
     character_name, spoken_line = regex_character_line(line, episode, debug=debug)
 
-    # Got a garbage line.
+    # A character didn't speak this line.
     if character_name is None or spoken_line is None:
+
+        # However, it could be the case that we've hit a scene change.
+        scene_change = determine_if_scene_change(line, episode, debug=debug)
+
+        if scene_change:
+            # If so, add all of the characters that have spoken (and their lines) to the list
+            # and reset the tracking.
+            episode.scene_lines.append(episode._lines_spoken_in_scene)
+            episode.scene_characters.append(episode._characters_spoken_in_scene)
+
+            episode._lines_spoken_in_scene = []
+            episode._characters_spoken_in_scene = []
+
         return
 
     # At this point, the assigned character has been given a line. However,
@@ -131,6 +144,39 @@ def parse_character_line(line, episode, debug=False):
 
     # Update the spoken line.
     episode.character_lines[character_name].append(spoken_line)
+
+    # Add the line the current scene.
+    episode._lines_spoken_in_scene.append(spoken_line)
+
+    # Character may already be in the scene...
+    if character_name not in episode._characters_spoken_in_scene:
+        episode._characters_spoken_in_scene.append(character_name)
+
+
+def determine_if_scene_change(line, episode, debug=False):
+
+    scene_change = False
+
+    if episode.scene_format == "SCENE":
+        if "Scene shift" in line or "Blackout" in line:
+            scene_change = True
+    elif episode.scene_format == "DASHES":
+        if "\- - -" in line or "\---" in line:
+            scene_change = True
+    elif episode.scene_format == "STARS":
+        if "* * *" in line or "***" in line:
+            scene_change = True
+    elif episode.scene_format == "INT/EXT":
+        if "INT" in line or "EXT" in line or "Interior" in line or "Exterior" in line:
+            scene_change = True
+    elif episode.scene_format == "CUT":
+        if "CUT TO" in line:
+            scene_change = True
+    elif episode.scene_format == "INT/EXT/CUT":
+        if "INT" in line or "EXT" in line or "CUT TO" in line:
+            scene_change = True
+
+    return scene_change
 
 
 def regex_character_line(line, episode, debug=False):

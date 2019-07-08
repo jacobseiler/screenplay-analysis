@@ -194,7 +194,20 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
         plt.close()
 
 
+def plot_scene_network_graph(characters, episodes, plot_output_path,
+                             characters_to_plot=None, plot_output_format="png"):
 
+    import networkx as nx
+
+    if characters_to_plot is None:
+        characters_to_plot = characters.keys()
+
+    G = nx.Graph()
+
+    # The nodes of the graph will be the characters.
+    G.add_nodes_from(characters_to_plot)
+
+    print(G)
 
 if __name__ == "__main__":
 
@@ -215,5 +228,9 @@ if __name__ == "__main__":
     characters_to_plot = ["Cersei", "Tyrion"]
     plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
+    # Make a network graph that shows the scenes that each character is in relative to
+    # others.
+    plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot)
+
     # Wordcloud of the words said by characters.
-    plot_wordcloud_character(season, "./plots")
+    # plot_wordcloud_character(season, "./plots")
