@@ -6,6 +6,8 @@ class Character(object):
         self._episode_lines = {}
         self._unique_words = []
 
+        self._scene_appearance_dict = {}
+
 
     @property
     def name(self):
@@ -30,6 +32,15 @@ class Character(object):
     @unique_words.setter
     def unique_words(self, unique_words):
         self._unique_words = unique_words
+
+    @property
+    def scene_appearance_dict(self):
+        return self._scene_appearance_dict
+
+    @scene_appearance_dict.setter
+    def scene_appearance_dict(self, appearance_dict):
+        self._scene_appearance_dict = appearance_dict
+
 
     def calc_unique_words(self):
 

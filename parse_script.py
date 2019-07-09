@@ -32,6 +32,7 @@ def normalize_name(character_name, allowed_double_names=None):
             "Blone Prostitute", "Black Haired Prostitute", "Sand Snakes", "High Sparrow",
             "Slave Owner", "Night's Watchman", "Khal Moro", "Young Rodrik", "Young Ned",
             "Three-Eyed Raven", "Young Lyanna", "Young Hodor", "Lady Walda", "Lady Crane",
+            "Maester Aemon", "Ser Vardis"
         ]
 
     # Populate a bunch of <House> <scout/warrior/guards>.
@@ -39,7 +40,8 @@ def normalize_name(character_name, allowed_double_names=None):
         "Lannister", "Stark", "Tyrell", "Baratheon", "Kings", "Nights Watch",
         "Kings Landing", "Wounded", "Frey"
     ]
-    NPC_classes = ["Scout", "Warrior", "Guards", "Bannerman", "Bannermen", "Guard", "Boy"]
+    NPC_classes = ["Soldier", "soldier", "Scout", "Warrior", "Guards", "Bannerman", "Bannermen",
+                   "Guard", "Boy"]
     random_NPCs = []
     for house in houses:
         for NPC_class in NPC_classes:
@@ -54,6 +56,8 @@ def normalize_name(character_name, allowed_double_names=None):
 
     # We also map some names explicitly to others...
     name_map = {
+        "Samwell": "Sam",
+        "Maester Aemon": "Aemon",
         "Royce": "Waymar",
         "Sandor": "The Hound",
         "Hound": "The Hound",
@@ -101,6 +105,11 @@ def parse_episode(fname, episode, debug=False):
             # Parse the line to see if a character spoke it (and add to the appropriate
             # character).
             parse_character_line(line, episode, debug=debug)
+
+    # Add the final scene to the episode.
+    episode.scene_lines.append(episode._lines_spoken_in_scene)
+    episode.scene_characters.append(episode._characters_spoken_in_scene)
+
 
 
 def parse_character_line(line, episode, debug=False):
@@ -158,7 +167,7 @@ def determine_if_scene_change(line, episode, debug=False):
     scene_change = False
 
     if episode.scene_format == "SCENE":
-        if "Scene shift" in line or "Blackout" in line:
+        if "Scene shift" in line or "Blackout" in line or "scene" in line.lower():
             scene_change = True
     elif episode.scene_format == "DASHES":
         if "\- - -" in line or "\---" in line:

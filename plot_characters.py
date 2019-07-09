@@ -195,7 +195,8 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
 
 
 def plot_scene_network_graph(characters, episodes, plot_output_path,
-                             characters_to_plot=None, plot_output_format="png"):
+                             characters_to_plot=None, weighted=True,
+                             plot_output_format="png"):
 
     import networkx as nx
 
@@ -207,7 +208,58 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
     # The nodes of the graph will be the characters.
     G.add_nodes_from(characters_to_plot)
 
-    print(G)
+    # Now for each character, the edges will be the number of times they appear in scenes
+    # with all other characters.
+    for character_name in characters_to_plot:
+
+        appearance_dict = characters[character_name].scene_appearance_dict
+        for other_character_name in appearance_dict.keys():
+
+            # Only consider those characters in the plotting list.
+            if other_character_name not in characters_to_plot:
+                continue
+
+            weight = appearance_dict[other_character_name]
+            G.add_edge(character_name, other_character_name, weight=weight)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    #nx.draw(G, with_labels=True, font_weight="bold")
+
+    pos = nx.circular_layout(G)
+
+    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=7500)
+    nx.draw_networkx_labels(G, pos)
+
+    all_weights = []
+    for (node1, node2, data) in G.edges(data=True):
+        all_weights.append(data["weight"])
+
+    unique_weights = list(set(all_weights))
+
+    for weight in unique_weights:
+
+        weighted_edges = [(node1,node2) for (node1,node2,edge_attr) in G.edges(data=True) \
+                            if edge_attr['weight']==weight]
+
+        #weighted_edges = [(node1, node2) for (node1, node2, edge_attr) \
+        #                    in G.edges(data=True) if edge.attr["weight"] == weight]
+
+        if weighted:
+            width = weight*len(characters_to_plot)*3.0/sum(all_weights)
+        else:
+            width = weight
+
+        nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width)
+
+    fig.tight_layout()
+
+    output_file = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
+    fig.savefig(output_file)
+    print("Saved file to {0}".format(output_file))
+    plt.close()
+
 
 if __name__ == "__main__":
 
@@ -222,15 +274,20 @@ if __name__ == "__main__":
     characters = c_utils.init_characters_in_episodes(episodes)
     c_utils.determine_lines_per_episode(episodes, characters)
 
+    # Determine the characters each character is in a scene with.
+    c_utils.determine_scene_interaction(episodes, characters)
+
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    characters_to_plot = ["Cersei", "Tyrion"]
-    plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
+    characters_to_plot = ["Cersei", "Tyrion", "Jaime", "Eddard", "Tywin", "Robb", "Jon",
+                          "Sansa"]
+    #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
     # Make a network graph that shows the scenes that each character is in relative to
     # others.
-    plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot)
+    plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
+                             weighted=False)
 
     # Wordcloud of the words said by characters.
     # plot_wordcloud_character(season, "./plots")

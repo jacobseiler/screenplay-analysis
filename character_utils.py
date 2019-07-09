@@ -41,7 +41,6 @@ def init_characters_in_episodes(episodes):
 
 def determine_lines_per_episode(episodes, characters):
 
-
     # For each character, add their lines from each episode.
     for character_name in characters.keys():
 
@@ -59,3 +58,30 @@ def determine_lines_per_episode(episodes, characters):
             # Add these lines to a dictionary.
             key_name = f"s{episode.season_num:02}e{episode.episode_num:02}"
             character.episode_lines[key_name] = lines_in_ep
+
+
+def determine_scene_interaction(episodes, characters):
+
+    # Go through each episode and add the characters in each scene to a dictionary.
+    for episode in episodes:
+
+        # episode.scene_characters is a list of lists. So go through each scene.
+        for scene in episode.scene_characters:
+
+            # Then within each scene, we want to add all OTHER characters to that
+            # character's appearance dict.
+            for character_name in scene:
+
+                scene_dict = characters[character_name].scene_appearance_dict
+
+                for other_character_name in scene:
+
+                    # Skip the i = j case.
+                    if other_character_name == character_name:
+                        continue
+
+                    # Initialize the first time.
+                    try:
+                        scene_dict[other_character_name] += 1
+                    except KeyError:
+                        scene_dict[other_character_name] = 1
