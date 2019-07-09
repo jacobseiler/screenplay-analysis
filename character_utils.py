@@ -66,7 +66,7 @@ def determine_scene_interaction(episodes, characters):
     for episode in episodes:
 
         # episode.scene_characters is a list of lists. So go through each scene.
-        for scene in episode.scene_characters:
+        for scene_num, scene in enumerate(episode.scene_characters):
 
             # Then within each scene, we want to add all OTHER characters to that
             # character's appearance dict.
@@ -75,6 +75,10 @@ def determine_scene_interaction(episodes, characters):
                 scene_dict = characters[character_name].scene_appearance_dict
 
                 for other_character_name in scene:
+
+                    if character_name == "Tyrion" and other_character_name == "Arya":
+                        print(episode.scene_lines[scene_num])
+                        print(f"{episode.season_num} {episode.episode_num}")
 
                     # Skip the i = j case.
                     if other_character_name == character_name:

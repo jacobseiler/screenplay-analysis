@@ -22,7 +22,7 @@ def normalize_name(character_name, allowed_double_names=None):
     if allowed_double_names is None:
         allowed_double_names = [
             "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
-            "Waymar", "Grand Maester Pycelle", "Street Urchin",
+            "Waymar", "Grand Maester Pycelle", "Maester Pycelle", "Street Urchin",
             "Kings Landing Baker", "Hot Pie", "Ser Alliser",
             "Maryn Trant", "King Joffrey", "King's Landing Page",
             "Wine Merchant", "Stable Boy", "Old Nan", "Little Bird",
@@ -56,6 +56,7 @@ def normalize_name(character_name, allowed_double_names=None):
 
     # We also map some names explicitly to others...
     name_map = {
+        "Eddard": "Ned",
         "Samwell": "Sam",
         "Maester Aemon": "Aemon",
         "Royce": "Waymar",
@@ -64,6 +65,7 @@ def normalize_name(character_name, allowed_double_names=None):
         "Luwin": "Maester Luwin",
         "Drogo": "Khal Drogo",
         "Grand Maester Pycelle": "Pycelle",
+        "Maester Pycelle": "Pycelle",
         "King Joffrey": "Joffrey",
         "Samwell": "Sam",
         "Ser Alliser": "Alliser",
@@ -71,7 +73,9 @@ def normalize_name(character_name, allowed_double_names=None):
         "Petry": "Littlefinger",
         "Mountain": "The Mountain",
         "Gregor": "The Mountain",
-        "Sparrow": "High Sparrow"
+        "Sparrow": "High Sparrow",
+        "Twyin": "Tywin", # Spelling lul.
+        "Rodrick": "Rodrik"  # Spelling.
     }
 
     if character_name in name_map:
@@ -157,6 +161,10 @@ def parse_character_line(line, episode, debug=False):
     # Add the line the current scene.
     episode._lines_spoken_in_scene.append(spoken_line)
 
+    if character_name == "Grey":
+        print(f"{episode.season_num} {episode.episode_num}")
+        print(spoken_line)
+
     # Character may already be in the scene...
     if character_name not in episode._characters_spoken_in_scene:
         episode._characters_spoken_in_scene.append(character_name)
@@ -190,6 +198,11 @@ def determine_if_scene_change(line, episode, debug=False):
 
 def regex_character_line(line, episode, debug=False):
 
+    # These are all scene descriptions.
+    if line[0] == "[" or line[0] == "_" or "CUT TO" in line or "_CUT" in line \
+                    or "INT" in line or "EXT" in line:
+        return None, None
+
     if episode.character_format == "**CHARACTER_NAME:**":
         character_name, spoken_line = parse_stars_character_line(line, debug=debug)
     elif episode.character_format == "CHARACTER_NAME:":
@@ -203,10 +216,6 @@ def regex_character_line(line, episode, debug=False):
 
 
 def parse_capital_character_line(line, debug=False):
-
-    # Lines starting with "[" a scene descriptions.
-    if line[0] == "[":
-        return None, None
 
     # A line spoken by a character will start with "CHARACTER_NAME:".
 
@@ -258,10 +267,6 @@ def parse_capital_character_line(line, debug=False):
 
 
 def parse_stars_character_line(line, debug=False):
-
-    # Lines starting with "_" a scene descriptions.
-    if line[0] == "-":
-        return None, None
 
     # A line spoken by a character will start with "**Character name:**".
     # Be careful, sometimes the colon is inside the ** or outside with a space...

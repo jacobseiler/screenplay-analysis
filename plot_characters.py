@@ -225,11 +225,13 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    #nx.draw(G, with_labels=True, font_weight="bold")
 
-    pos = nx.circular_layout(G)
+    # Drawing a weighted graph with.
+    # https://qxf2.com/blog/drawing-weighted-graphs-with-networkx/
 
-    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=7500)
+    pos = nx.spring_layout(G)
+
+    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=1000)
     nx.draw_networkx_labels(G, pos)
 
     all_weights = []
@@ -277,17 +279,19 @@ if __name__ == "__main__":
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
 
+    print(characters["Robb"].scene_appearance_dict)
+
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    characters_to_plot = ["Cersei", "Tyrion", "Jaime", "Eddard", "Tywin", "Robb", "Jon",
+    characters_to_plot = ["Cersei", "Tyrion", "Jaime", "Ned", "Tywin", "Robb", "Jon",
                           "Sansa"]
     #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
     # Make a network graph that shows the scenes that each character is in relative to
     # others.
     plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
-                             weighted=False)
+                             weighted=True)
 
     # Wordcloud of the words said by characters.
     # plot_wordcloud_character(season, "./plots")

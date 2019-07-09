@@ -59,6 +59,10 @@ Line 330:
 Old: **Mago:** _A Khal who takes orders from a foreign whore is no Khal._
 New: **Mago:** A Khal who takes orders from a foreign whore is no Khal.
 
+Line 496:
+Old: **Jamie Lannister:** He's been covering himself in glory.
+New: **Jaime Lannister:** He's been covering himself in glory.
+
 ## Episode 9
 
 For some fucking reason, some "I"s have been listed as "l"s...
@@ -104,10 +108,33 @@ New: **Sam**: I am the sword in the darkness, the watcher on the walls, the shie
 New: **Pyp**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
 New: **Grenn**: I am the sword in the darkness, the watcher on the walls, the shield that guards the realms of men. I pledge my life and honor to the Night's Watch, for this night and all nights to come.”
 
+# Season 2
+
+## Episode 6
+
+Line 535:
+Old: SNSA: I saw you cry.
+New: SANSA: I saw you cry.
+
+Line 1217:
+
+Old: DANAERYS: Where are they? Where are my dragons?
+New: DAENERYS: Where are they? Where are my dragons?
+
+## Episode 7
+
+Line 1055:
+Old: CESEI: Robert was a drunken fool, but he didn't enjoy cruelty. Sometimes I wonder. What? If this is the price for what we've done, for our sins.
+New: CERSEI: Robert was a drunken fool, but he didn't enjoy cruelty. Sometimes I wonder. What? If this is the price for what we've done, for our sins.
 
 # Season 3
 
 ## Episode 1
+
+Line 918:
+
+Old: DANAERYS: They may suit my needs. Tell me of their training.
+New: DAENERYS: They may suit my needs. Tell me of their training.
 
 Line 946:
 Old: MISSANDEI: Missandei: My master says the Unsullied are not men. Death means nothing to them.
@@ -124,3 +151,61 @@ New: MISSANDEI: My master points out that men don't need nipples.
 Line 41:
 Old: Ramsay: Tansy! Tansy! Tansy!
 New: RAMSAY: Tansy! Tansy! Tansy!
+
+## Episode 5
+
+Line 369:
+Old: CERSEI: I suppose that explains why we did so well in the last one.
+New: CERSEI: I suppose that explains why we did so well in the last one.
+
+## Episode 8
+
+Line 769:
+Old: TYWEN: *standing up* The gods have made their will known. Tyrion Lannister, in the name of King Tommen of the House Baratheon, First of His Name, you are hereby sentenced to death.
+New: TYWIN: *standing up* The gods have made their will known. Tyrion Lannister, in the name of King Tommen of the House Baratheon, First of His Name, you are hereby sentenced to death.
+
+# Season 5
+
+## Episode 6
+
+Line 652:
+
+Old: PYELLE: It was. The Strangler. A poison few in the Seven Kingdoms possess. And used to strike down the most noble child the gods ever put on this good earth.
+New: PYCELLE: It was. The Strangler. A poison few in the Seven Kingdoms possess. And used to strike down the most noble child the gods ever put on this good earth.
+
+Line 778:
+
+Old: TYRIOM: Ned Stark was promised the same thing and we both know how that turned out.
+New: TYRION: Ned Stark was promised the same thing and we both know how that turned out.
+
+Line 784:
+
+Old: YTRION: How do you know?
+New: TYRION: How do you know?
+
+## Episode 8
+
+Line 335:
+
+Old: DANERYS: Why did you travel to the other side of the world to meet someone terrible?
+New: DAENERYS: Why did you travel to the other side of the world to meet someone terrible?
+
+# Season 6
+
+## Episode 4
+
+Old: MAESTER PYCELL: I am a member of the Small Council. The king’s small --
+New: MAESTER PYCELLE: I am a member of the Small Council. The king’s small --
+
+## Episode 8
+
+Old: GREY WORM  & MISSANDEI: Long may she reign.
+New: GREY WORM: Long may she reign.
+New: MISSANDEI: Long may she reign.
+
+# Season 8
+
+## Episode 4
+
+Old: BRINEE: You were married. Before Sansa.
+New: BRIENNE: You were married. Before Sansa.
