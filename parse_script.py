@@ -23,7 +23,7 @@ def normalize_name(character_name, allowed_double_names=None):
         allowed_double_names = [
             "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
             "Waymar", "Grand Maester Pycelle", "Maester Pycelle", "Street Urchin",
-            "Kings Landing Baker", "Hot Pie", "Ser Alliser",
+            "King's Landing Baker", "Hot Pie", "Ser Alliser",
             "Maryn Trant", "King Joffrey", "King's Landing Page",
             "Wine Merchant", "Stable Boy", "Old Nan", "Little Bird",
             "The Group", "The Others At The Table", "Gold Cloak", "Crowd",
@@ -32,7 +32,8 @@ def normalize_name(character_name, allowed_double_names=None):
             "Blone Prostitute", "Black Haired Prostitute", "Sand Snakes", "High Sparrow",
             "Slave Owner", "Night's Watchman", "Khal Moro", "Young Rodrik", "Young Ned",
             "Three-Eyed Raven", "Young Lyanna", "Young Hodor", "Lady Walda", "Lady Crane",
-            "Maester Aemon", "Ser Vardis"
+            "Maester Aemon", "Ser Vardis", "Maester Walkan", "Maester Pycelle",
+            "High Septon",
         ]
 
     # Populate a bunch of <House> <scout/warrior/guards>.
@@ -56,6 +57,9 @@ def normalize_name(character_name, allowed_double_names=None):
 
     # We also map some names explicitly to others...
     name_map = {
+        "Three-eyed": "Three-Eyed Raven",
+        "Three-Eyed": "Three-Eyed Raven",
+        "Three": "Three-Eyed Raven",
         "Eddard": "Ned",
         "Samwell": "Sam",
         "Maester Aemon": "Aemon",
@@ -70,10 +74,11 @@ def normalize_name(character_name, allowed_double_names=None):
         "Samwell": "Sam",
         "Ser Alliser": "Alliser",
         "Baelish": "Littlefinger",
-        "Petry": "Littlefinger",
+        "Petyr": "Littlefinger",
         "Mountain": "The Mountain",
         "Gregor": "The Mountain",
         "Sparrow": "High Sparrow",
+        "Blackfish": "Brynden",
         "Twyin": "Tywin", # Spelling lul.
         "Rodrick": "Rodrik"  # Spelling.
     }
@@ -111,8 +116,8 @@ def parse_episode(fname, episode, debug=False):
             parse_character_line(line, episode, debug=debug)
 
     # Add the final scene to the episode.
-    episode.scene_lines.append(episode._lines_spoken_in_scene)
-    episode.scene_characters.append(episode._characters_spoken_in_scene)
+    episode.scene_lines.append(episode._tmp_scene_lines)
+    episode.scene_characters.append(episode._tmp_scene_characters)
 
 
 
@@ -135,11 +140,11 @@ def parse_character_line(line, episode, debug=False):
         if scene_change:
             # If so, add all of the characters that have spoken (and their lines) to the list
             # and reset the tracking.
-            episode.scene_lines.append(episode._lines_spoken_in_scene)
-            episode.scene_characters.append(episode._characters_spoken_in_scene)
+            episode.scene_lines.append(episode._tmp_scene_lines)
+            episode.scene_characters.append(episode._tmp_scene_characters)
 
-            episode._lines_spoken_in_scene = []
-            episode._characters_spoken_in_scene = []
+            episode._tmp_scene_lines = []
+            episode._tmp_scene_characters = []
 
         return
 
@@ -161,13 +166,13 @@ def parse_character_line(line, episode, debug=False):
     # Add the line the current scene.
     episode._lines_spoken_in_scene.append(spoken_line)
 
-    if character_name == "Grey":
+    if character_name == "King's":
         print(f"{episode.season_num} {episode.episode_num}")
         print(spoken_line)
 
     # Character may already be in the scene...
-    if character_name not in episode._characters_spoken_in_scene:
-        episode._characters_spoken_in_scene.append(character_name)
+    if character_name not in episode._tmp_scene_characters:
+        episode._tmp_scene_characters.append(character_name)
 
 
 def determine_if_scene_change(line, episode, debug=False):

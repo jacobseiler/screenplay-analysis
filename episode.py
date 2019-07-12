@@ -1,6 +1,37 @@
+#!/usr/bin/env python
+"""
+This module contains the ``Episode`` class.  The ``Episode`` class contains all the
+data associated with a single episode.
+
+Several functions have been written to interface with the lists of ``Episode`` classes and can be
+found in ``episode_utils.py``.
+
+Author: Jacob Seiler.
+"""
+
 class Episode(object):
+    """
+    Handles all of the data associated with single episode.
+    """
 
     def __init__(self, season_num, episode_num, key, script_path):
+        """
+        Sets empty lists, dictionaries and information about the episode.
+
+        Parameters
+        ----------
+
+        season_num, episode_num: ints
+            The season and episode numbers of this episode.
+
+        key: string
+            A unique key for this episode. Used by indivual :py:class:`~Character` class
+            instances to track the lines spoken in each episode.
+
+        script_path: string
+            Path to where the script of this episode is stored. Used to read and parse the
+            lines/scenes for the episode.
+        """
 
         self._season_num = season_num
         self._episode_num = episode_num
@@ -11,11 +42,17 @@ class Episode(object):
         self._scene_lines = []
         self._scene_characters = []
 
-        self._characters_spoken_in_scene = []
-        self._lines_spoken_in_scene = []
+        # When we parse individual scenes, we add the lines and characters to expanding
+        # lists.  When we hit a scene change, these temporary lists are added to
+        # `_scene_lines` and `_scene_characters`.
+        self._tmp_scene_lines = []
+        self._tmp_scene_characters = []
 
     @property
     def season_num(self):
+        """
+        int: The season number.
+        """
         return self._season_num
 
     @season_num.setter
@@ -24,6 +61,9 @@ class Episode(object):
 
     @property
     def episode_num(self):
+        """
+        int: The episode number.
+        """
         return self._episode_num
 
     @episode_num.setter
@@ -32,6 +72,11 @@ class Episode(object):
 
     @property
     def character_lines(self):
+        """
+        dict[string, list of strings]: Dictionary containing a list of lines spoken by
+        each character. Key is the name of the character and the value are all lines
+        spoken by that character in this episode.
+        """
         return self._character_lines
 
     @character_lines.setter
@@ -40,10 +85,29 @@ class Episode(object):
 
     @property
     def character_format(self):
+        """
+        string: Key that specifies how each character line is identified in the script.
+        Used to apply a regular expression across the script to extract the lines spoken
+        by each character.
+
+        Possible Values
+        ---------------
+        "CHARACTER_NAME:" corresponds to the lines of the script being "CHARACTER NAME: <Spoken Line>"
+
+        "**CHARACTER_NAME:**" corresponds to the lines of the script being "**CHARACTER NAME:** <Spoken Line>"
+        """
         return self._character_format
 
     @character_format.setter
     def character_format(self, character_format):
+
+        allowed_formats = ["CHARACTER_NAME:", "**CHARACTER_NAME:**"]
+        if character_format not in allowed_formats:
+            print(f"The format for parsing the characters for episode {key} was
+                  f"specified as {character_format}. The only allowed formats are "
+                  f"{allowed_formats}")
+            raise ValueError
+
         self._character_format = character_format
 
     @property
