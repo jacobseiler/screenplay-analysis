@@ -55,12 +55,14 @@ def determine_lines_per_episode(episodes, characters):
             except KeyError:
                 continue
 
+
             # Add these lines to a dictionary.
             key_name = f"s{episode.season_num:02}e{episode.episode_num:02}"
             character.episode_lines[key_name] = lines_in_ep
 
 
-def determine_scene_interaction(episodes, characters):
+def determine_scene_interaction(episodes, characters, debug_name_one=None,
+                                debug_name_two=None):
 
     # Go through each episode and add the characters in each scene to a dictionary.
     for episode in episodes:
@@ -76,9 +78,11 @@ def determine_scene_interaction(episodes, characters):
 
                 for other_character_name in scene:
 
-                    if character_name == "Tyrion" and other_character_name == "Arya":
+                    if character_name == debug_name_one and \
+                        other_character_name == debug_name_two:
                         print(episode.scene_lines[scene_num])
                         print(f"{episode.season_num} {episode.episode_num}")
+
 
                     # Skip the i = j case.
                     if other_character_name == character_name:
@@ -89,3 +93,34 @@ def determine_scene_interaction(episodes, characters):
                         scene_dict[other_character_name] += 1
                     except KeyError:
                         scene_dict[other_character_name] = 1
+
+
+
+def determine_character_classes(characters, main_char=False, minor_char=False,
+                                extras=False):
+
+    main_characters = [
+        "Daenerys", "Jon", "Arya", "Sansa", "The Mountain", "Tyrion", "Bran", "Cersei",
+        "Melisandre", "The Hound", "Khal Drogo", "Joffrey", "Brienne", "Theon", "Jaime",
+        "Bronn", "Ramsay", "Littlefinger", "Varys", "Jorah", "Margaery", "Sam",
+        "Missandei", "Davos", "Ned", "Catelyn", "Tywin", "Robb", "Bronn", "Stannis",
+        "Tormund"
+    ]
+
+    minor_characters = [
+        "Qybyrn", "Grey Worm", "Pycelle", "Gilly", "Ygritte", "Gendry", "High Sparrow",
+        "Oberyon", "Alliser", "Khal Drogo", "Renly", "Maester Aemon"]
+
+    characters_to_return = []
+
+    if main_char:
+        for character_name in main_characters:
+            if character_name in characters.keys():
+                characters_to_return.append(character_name)
+
+    if minor_char:
+        for character_name in minor_characters:
+            if character_name in characters.keys():
+                characters_to_return.append(character_name)
+
+    return characters_to_return
