@@ -195,7 +195,7 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
 
 
 def plot_scene_network_graph(characters, episodes, plot_output_path,
-                             characters_to_plot=None, weighted=True,
+                             characters_to_plot=None, weight_method=None,
                              plot_output_format="png"):
 
     import networkx as nx
@@ -208,8 +208,8 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
     # The nodes of the graph will be the characters.
     G.add_nodes_from(characters_to_plot)
 
-    # Now for each character, the edges will be the number of times they appear in scenes
-    # with all other characters.
+    # Now for each character, the weight of the edges will be scaled by the number of
+    # times they appear with the other character.
     for character_name in characters_to_plot:
 
         appearance_dict = characters[character_name].scene_appearance_dict
@@ -219,22 +219,29 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
             if other_character_name not in characters_to_plot:
                 continue
 
-            weight = appearance_dict[other_character_name]
-            G.add_edge(character_name, other_character_name, weight=weight)
+            # Character A and B appear in scenes with other characters. So let's weight
+            # the edges by the fraction of scenes A&B appear together, relative to the
+            # other characters they appear with.
+            A_in_B = appearance_dict[other_character_name]
+            num_scenes_A = characters[character_name].num_scenes
+            num_scenes_B = characters[other_character_name].num_scenes
+
+            weight = A_in_B / (num_scenes_A + num_scenes_B)
+
+            G.add_edge(character_name, other_character_name, weight=weight*10)
 
     fig = plt.figure(figsize=(24,24))
     ax = fig.add_subplot(111)
 
-    # Drawing a weighted graph with.
-    # https://qxf2.com/blog/drawing-weighted-graphs-with-networkx/
-
+    # We first now draw all the nodes (i.e., characters) and their labels.
     pos = nx.spring_layout(G)
-    print(pos)
-    print(type(pos))
-    exit()
 
     nx.draw_networkx_nodes(G,pos,node_color='green',node_size=3000)
     nx.draw_networkx_labels(G, pos)
+
+
+    # Now we want to draw the edges weighted by the previously determined weights.
+    # Based on https://qxf2.com/blog/drawing-weighted-graphs-with-networkx/
 
     all_weights = []
     for (node1, node2, data) in G.edges(data=True):
@@ -247,13 +254,7 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
         weighted_edges = [(node1,node2) for (node1,node2,edge_attr) in G.edges(data=True) \
                             if edge_attr['weight']==weight]
 
-        #weighted_edges = [(node1, node2) for (node1, node2, edge_attr) \
-        #                    in G.edges(data=True) if edge.attr["weight"] == weight]
-
-        if weighted:
-            width = weight*len(characters_to_plot)*3.0/sum(all_weights)
-        else:
-            width = weight
+        width = weight
 
         nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width)
 
@@ -268,7 +269,7 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
 if __name__ == "__main__":
 
     # Parse all the episodes we desire.
-    season_nums = np.arange(8, 9)
+    season_nums = np.arange(1, 9)
     episode_nums = np.arange(1, 11)
     debug = False
 
@@ -278,31 +279,6 @@ if __name__ == "__main__":
     characters = c_utils.init_characters_in_episodes(episodes)
     c_utils.determine_lines_per_episode(episodes, characters)
 
-    """
-    import textacy
-
-    for season in np.arange(1, 9):
-
-        season_lines = []
-        for ep in np.arange(1,11):
-
-            key = f"s{season:02}e{ep:02}"
-            try:
-                lines_in_ep = characters["Jaime"].episode_lines[key]
-            except KeyError:
-                continue
-            lines = " ".join(lines_in_ep)
-
-            season_lines.append(lines)
-
-        lines = " ".join(season_lines)
-
-        #print(lines)
-
-        doc = textacy.make_spacy_doc(lines)
-        ts = textacy.TextStats(doc)
-        print(f"Jaime in Season {season} had readability stats {ts.readability_stats}")
-    """
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
 
@@ -310,7 +286,7 @@ if __name__ == "__main__":
 
     # This is a histogram of the number of lines said by the character across the Season.
     characters_to_plot = c_utils.determine_character_classes(characters, main_char=True,
-minor_char=True)
+                                                             minor_char=True)
 
     # Let's remove some characters to make the plots look nicer.
     #to_remove = ["Khal Drogo", "The Mountain"]
@@ -322,12 +298,10 @@ minor_char=True)
 
     #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
-    print(characters["Arya"].scene_appearance_dict)
-    exit()
     # Make a network graph that shows the scenes that each character is in relative to
     # others.
     plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
-                             weighted=True)
+                             weight_method="weight_by_character")
 
     # Wordcloud of the words said by characters.
     # plot_wordcloud_character(season, "./plots")

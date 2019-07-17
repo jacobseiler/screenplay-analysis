@@ -29,6 +29,7 @@ class Character(object):
         self._episode_lines = {}
         self._unique_words = []
         self._scene_appearance_dict = {}
+        self._num_scenes = 0
 
 
     @property
@@ -81,6 +82,16 @@ class Character(object):
     def scene_appearance_dict(self, appearance_dict):
         self._scene_appearance_dict = appearance_dict
 
+    @property
+    def num_scenes(self):
+        """
+        int: Number of times character talks in scenes.
+        """
+        return self._num_scenes
+
+    @num_scenes.setter
+    def num_scenes(self, num_scenes):
+        self._num_scenes = num_scenes
 
     def calc_unique_words(self):
 

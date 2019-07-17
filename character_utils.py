@@ -76,13 +76,15 @@ def determine_scene_interaction(episodes, characters, debug_name_one=None,
 
                 scene_dict = characters[character_name].scene_appearance_dict
 
+                # Track how many scenes each character was in.
+                characters[character_name].num_scenes += 1
+
                 for other_character_name in scene:
 
                     if character_name == debug_name_one and \
                         other_character_name == debug_name_two:
                         print(episode.scene_lines[scene_num])
                         print(f"{episode.season_num} {episode.episode_num}")
-
 
                     # Skip the i = j case.
                     if other_character_name == character_name:
@@ -93,7 +95,6 @@ def determine_scene_interaction(episodes, characters, debug_name_one=None,
                         scene_dict[other_character_name] += 1
                     except KeyError:
                         scene_dict[other_character_name] = 1
-
 
 
 def determine_character_classes(characters, main_char=False, minor_char=False,
@@ -109,7 +110,8 @@ def determine_character_classes(characters, main_char=False, minor_char=False,
 
     minor_characters = [
         "Qybyrn", "Grey Worm", "Pycelle", "Gilly", "Ygritte", "Gendry", "High Sparrow",
-        "Oberyon", "Alliser", "Khal Drogo", "Renly", "Maester Aemon"]
+        "Oberyon", "Alliser", "Khal Drogo", "Renly", "Maester Aemon", "Podrick"
+    ]
 
     characters_to_return = []
 
