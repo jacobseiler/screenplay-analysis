@@ -59,10 +59,10 @@ class Character(object):
         self._episode_lines = episode_lines
 
     @property
+    def unique_words(self):
         """
         TODO: Update this when I actually use it...
         """
-    def unique_words(self):
         return self._unique_words
 
     @unique_words.setter

@@ -33,7 +33,7 @@ def normalize_name(character_name, allowed_double_names=None):
             "Slave Owner", "Night's Watchman", "Khal Moro", "Young Rodrik", "Young Ned",
             "Three-Eyed Raven", "Young Lyanna", "Young Hodor", "Lady Walda", "Lady Crane",
             "Maester Aemon", "Ser Vardis", "Maester Walkan", "Maester Pycelle",
-            "High Septon",
+            "High Septon", "Black Walder"
         ]
 
     # Populate a bunch of <House> <scout/warrior/guards>.
@@ -164,7 +164,7 @@ def parse_character_line(line, episode, debug=False):
     episode.character_lines[character_name].append(spoken_line)
 
     # Add the line the current scene.
-    episode._lines_spoken_in_scene.append(spoken_line)
+    episode._tmp_scene_lines.append(spoken_line)
 
     if character_name == "King's":
         print(f"{episode.season_num} {episode.episode_num}")

@@ -101,9 +101,9 @@ class Episode(object):
     @character_format.setter
     def character_format(self, character_format):
 
-        allowed_formats = ["CHARACTER_NAME:", "**CHARACTER_NAME:**"]
+        allowed_formats = ["CHARACTER_NAME:", "**CHARACTER_NAME:**", "NONE"]
         if character_format not in allowed_formats:
-            print(f"The format for parsing the characters for episode {key} was
+            print(f"The format for parsing the characters for episode {self.key} was "
                   f"specified as {character_format}. The only allowed formats are "
                   f"{allowed_formats}")
             raise ValueError

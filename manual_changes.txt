@@ -70,6 +70,14 @@ For some fucking reason, some "I"s have been listed as "l"s...
 For consistency, just going to rename a bunch of 'random Night's Watcher to 'Nights Watch Warrior'
 Line 128, 129 130 all changed to 'Nights Watch Warrior'.
 
+Line 481:
+Old: **Eddark Stark:** Baelor!
+New: **Eddard Stark:** Baelor!
+
+Line 485:
+Old: **Eddark Stark:** I am Eddard Stark, Lord of Winterfell and Hand of the King. I come before you to confess my treason in the sight of Gods and men. I betrayed the faith of my King and the trust of my friend Robert. I swore to protect and defend his children, but before his blood was cold I plotted to murder his son and seize the Throne for myself. Let the High Septon and Baelor the Blessed bear witness to what I say: Joffrey Baratheon is the one true heir to the Iron Throne, by the grace of all the Gods, Lord of the Seven Kingdoms and Protector of the Realm.
+New: **Eddard Stark:** I am Eddard Stark, Lord of Winterfell and Hand of the King. I come before you to confess my treason in the sight of Gods and men. I betrayed the faith of my King and the trust of my friend Robert. I swore to protect and defend his children, but before his blood was cold I plotted to murder his son and seize the Throne for myself. Let the High Septon and Baelor the Blessed bear witness to what I say: Joffrey Baratheon is the one true heir to the Iron Throne, by the grace of all the Gods, Lord of the Seven Kingdoms and Protector of the Realm.
+
 Line 486:
 Old: **Grand Maester Pycelle** **:** As we sin, so do we suffer. This man has confessed his crimes in sight of Gods and men. The Gods are just but beloved Baelor taught us they can also be merciful. What is to be done with this traitor, Your Grace?
 New: **Grand Maester Pycelle:** As we sin, so do we suffer. This man has confessed his crimes in sight of Gods and men. The Gods are just but beloved Baelor taught us they can also be merciful. What is to be done with this traitor, Your Grace?
@@ -127,6 +135,20 @@ Line 1055:
 Old: CESEI: Robert was a drunken fool, but he didn't enjoy cruelty. Sometimes I wonder. What? If this is the price for what we've done, for our sins.
 New: CERSEI: Robert was a drunken fool, but he didn't enjoy cruelty. Sometimes I wonder. What? If this is the price for what we've done, for our sins.
 
+## Episode 8
+
+A bunch of 'BRINENNE' to 'BRIENNE'.
+
+Line 893:
+Old: AYRA: Shut up. What did you bring?
+NEw: ARYA: Shut up. What did you bring?
+
+## Episode 10
+
+Line 89:
+Old: JOFFFREY: Your house has come to our aid. The whole realm is in your debt, none more so than I. If your family would ask anything of me, ask it, and it shall be yours.
+New: JOFFREY: Your house has come to our aid. The whole realm is in your debt, none more so than I. If your family would ask anything of me, ask it, and it shall be yours.
+
 # Season 3
 
 ## Episode 1
@@ -144,13 +166,29 @@ Line 966:
 Old: Missandei: My master points out that men don't need nipples.
 New: MISSANDEI: My master points out that men don't need nipples.
 
+## Episode 9
+
+Line 285:
+Old: **ARYA** : Don't kill him! Please. Please don't.
+New: **ARYA:** Don't kill him! Please. Please don't.
+
 # Season 4
+
+## Episode 1
+
+Line 647:
+Old: CERSIE: Thank you for your help with the other matter.
+New: CERSEI: Thank you for your help with the other matter.
 
 ## Episode 2
 
 Line 41:
 Old: Ramsay: Tansy! Tansy! Tansy!
 New: RAMSAY: Tansy! Tansy! Tansy!
+
+Line 989:
+Old: TYRON: Pay each of them 20 gold when this is done.
+New: TYRION: Pay each of them 20 gold when this is done.
 
 ## Episode 5
 
@@ -165,6 +203,11 @@ Old: TYWEN: *standing up* The gods have made their will known. Tyrion Lannister,
 New: TYWIN: *standing up* The gods have made their will known. Tyrion Lannister, in the name of King Tommen of the House Baratheon, First of His Name, you are hereby sentenced to death.
 
 # Season 5
+
+## Episode 1
+
+Old: GRAND MAESTER PYRCELLE: Deepest condolences, your grace. This tragedy… I never trusted Varys. I often warned…
+New: GRAND MAESTER PYCELLE: Deepest condolences, your grace. This tragedy… I never trusted Varys. I often warned…
 
 ## Episode 6
 
@@ -192,6 +235,12 @@ New: DAENERYS: Why did you travel to the other side of the world to meet someone
 
 # Season 6
 
+## Episode 3
+
+Line 496:
+Old: QYBURNS: He understands well enough _._
+New: QYBURN: He understands well enough _._
+
 ## Episode 4
 
 Old: MAESTER PYCELL: I am a member of the Small Council. The king’s small --
@@ -207,5 +256,10 @@ New: MISSANDEI: Long may she reign.
 
 ## Episode 4
 
+Line 337:
 Old: BRINEE: You were married. Before Sansa.
 New: BRIENNE: You were married. Before Sansa.
+
+Line 1183:
+Old: EURION: I saw it sink beneath the waves.
+New: EURON: I saw it sink beneath the waves.

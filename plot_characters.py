@@ -222,16 +222,18 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
             weight = appearance_dict[other_character_name]
             G.add_edge(character_name, other_character_name, weight=weight)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(24,24))
     ax = fig.add_subplot(111)
-
 
     # Drawing a weighted graph with.
     # https://qxf2.com/blog/drawing-weighted-graphs-with-networkx/
 
     pos = nx.spring_layout(G)
+    print(pos)
+    print(type(pos))
+    exit()
 
-    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=1000)
+    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=3000)
     nx.draw_networkx_labels(G, pos)
 
     all_weights = []
@@ -266,7 +268,7 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
 if __name__ == "__main__":
 
     # Parse all the episodes we desire.
-    season_nums = np.arange(1, 9)
+    season_nums = np.arange(8, 9)
     episode_nums = np.arange(1, 11)
     debug = False
 
@@ -276,18 +278,52 @@ if __name__ == "__main__":
     characters = c_utils.init_characters_in_episodes(episodes)
     c_utils.determine_lines_per_episode(episodes, characters)
 
+    """
+    import textacy
+
+    for season in np.arange(1, 9):
+
+        season_lines = []
+        for ep in np.arange(1,11):
+
+            key = f"s{season:02}e{ep:02}"
+            try:
+                lines_in_ep = characters["Jaime"].episode_lines[key]
+            except KeyError:
+                continue
+            lines = " ".join(lines_in_ep)
+
+            season_lines.append(lines)
+
+        lines = " ".join(season_lines)
+
+        #print(lines)
+
+        doc = textacy.make_spacy_doc(lines)
+        ts = textacy.TextStats(doc)
+        print(f"Jaime in Season {season} had readability stats {ts.readability_stats}")
+    """
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
-
-    print(characters["Robb"].scene_appearance_dict)
 
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    characters_to_plot = ["Cersei", "Tyrion", "Jaime", "Ned", "Tywin", "Robb", "Jon",
-                          "Sansa"]
+    characters_to_plot = c_utils.determine_character_classes(characters, main_char=True,
+minor_char=True)
+
+    # Let's remove some characters to make the plots look nicer.
+    #to_remove = ["Khal Drogo", "The Mountain"]
+    to_remove = []
+    for character_name in to_remove:
+        if character_name in characters_to_plot:
+            characters_to_plot.remove(character_name)
+
+
     #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
+    print(characters["Arya"].scene_appearance_dict)
+    exit()
     # Make a network graph that shows the scenes that each character is in relative to
     # others.
     plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
