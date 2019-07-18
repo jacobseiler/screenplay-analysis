@@ -195,10 +195,22 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
 
 
 def plot_scene_network_graph(characters, episodes, plot_output_path,
-                             characters_to_plot=None, weight_method=None,
+                             characters_to_plot=None, plot_method="networkx",
                              plot_output_format="png"):
 
+    allowed_plot_methods = ["networkx", "bokeh"]
+    if plot_method not in allowed_plot_methods:
+        print(f"Selected plot_method for the scene network graph is {plot_method}. "
+              f"The only allowed methods are {allowed_plot_methods}")
+        raise ValueError
+
     import networkx as nx
+
+    if plot_method == "bokeh":
+        from bokeh.io import save, output_file
+        from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, BoxZoomTool, ResetTool, TapTool, PanTool
+        from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges
+        from bokeh.palettes import Spectral4
 
     if characters_to_plot is None:
         characters_to_plot = characters.keys()
@@ -228,42 +240,90 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
 
             weight = A_in_B / (num_scenes_A + num_scenes_B)
 
-            G.add_edge(character_name, other_character_name, weight=weight*10)
-
-    fig = plt.figure(figsize=(24,24))
-    ax = fig.add_subplot(111)
-
-    # We first now draw all the nodes (i.e., characters) and their labels.
-    pos = nx.spring_layout(G)
-
-    nx.draw_networkx_nodes(G,pos,node_color='green',node_size=3000)
-    nx.draw_networkx_labels(G, pos)
+            G.add_edge(character_name, other_character_name, weight=weight*50)
 
 
-    # Now we want to draw the edges weighted by the previously determined weights.
-    # Based on https://qxf2.com/blog/drawing-weighted-graphs-with-networkx/
+    # If we're plotting using solely networkx, it uses an MPL axis.
+    if plot_method == "networkx":
+        fig = plt.figure(figsize=(24,24))
+        ax = fig.add_subplot(111)
 
+        # We first now draw all the nodes (i.e., characters) and their labels.
+        pos = nx.spring_layout(G)
+
+        nx.draw_networkx_nodes(G,pos,node_color='green',node_size=3000)
+        nx.draw_networkx_labels(G, pos)
+
+    # Otherwise, need a specific Bokeh axis.
+    elif plot_method == "bokeh":
+        plot = Plot(plot_width=400, plot_height=400, x_range=Range1d(-2.1,2.1),
+                    y_range=Range1d(-2.1,2.1))
+
+    # We now want to go through each edge, and build an edge attributes dictionary and a
+    # list of unique weights.  Furthermore, for the Bokeh plot, we want to add extra
+    # attributes to each node that we will show on Hover/etc
+    edge_attrs = {}
     all_weights = []
     for (node1, node2, data) in G.edges(data=True):
+        edge_attrs[(node1, node2)] = data["weight"]
         all_weights.append(data["weight"])
 
+        if plot_method == "bokeh":
+            G.nodes[node1]["name"] = node1
+            G.nodes[node2]["name"] = node2
+
+    # Explicitly set these weights (needed for Bokeh referencing later).
+    nx.set_edge_attributes(G, edge_attrs, "weight")
     unique_weights = list(set(all_weights))
 
-    for weight in unique_weights:
 
-        weighted_edges = [(node1,node2) for (node1,node2,edge_attr) in G.edges(data=True) \
-                            if edge_attr['weight']==weight]
+    # If we're only plotting with networkx, go through and manually plot.
+    if plot_method == "networkx":
+        for weight in unique_weights:
 
-        width = weight
+            weighted_edges = [(node1,node2) for (node1,node2,edge_attr) in G.edges(data=True) \
+                                if edge_attr['weight']==weight]
 
-        nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width)
+            width = weight
+            nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width)
 
-    fig.tight_layout()
+        fig.tight_layout()
 
-    output_file = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
-    fig.savefig(output_file)
-    print("Saved file to {0}".format(output_file))
-    plt.close()
+        output_fname = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
+        fig.savefig(output_fname)
+
+    # Otherwise, need to get fancy.
+    elif plot_method == "bokeh":
+
+        # Convert the networkx Graph to a bokeh renderer.
+        graph_renderer = from_networkx(G, nx.spring_layout, scale=2, center=(0,0))
+
+        # Add a hover tool to show the character name.
+        node_hover_tool = HoverTool(tooltips=[("Character", "@name")])
+        plot.add_tools(node_hover_tool, PanTool(), TapTool(), BoxZoomTool(), ResetTool())
+
+        # Draw the nodes as circles.
+        graph_renderer.node_renderer.glyph = Circle(size=15, fill_color=Spectral4[0])
+        graph_renderer.node_renderer.selection_glyph = Circle(size=15, fill_color=Spectral4[2])
+
+        # First draw the edges in grey.
+        graph_renderer.edge_renderer.glyph = MultiLine(line_color="#CCCCCC",
+                                                       line_alpha=0.8, line_width="weight")
+
+        # Then on selected, show the edges weighted by the previously defined values based on
+        # the relative scene appearances.
+        graph_renderer.edge_renderer.selection_glyph = MultiLine(line_color=Spectral4[2],
+                                                       line_alpha=0.8, line_width="weight")
+
+        graph_renderer.selection_policy = NodesAndLinkedEdges()
+
+        plot.renderers.append(graph_renderer)
+
+        output_fname = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
+        output_file(output_fname)
+        save(plot)
+
+    print(f"Saved file to {output_fname}")
 
 
 if __name__ == "__main__":
@@ -301,7 +361,7 @@ if __name__ == "__main__":
     # Make a network graph that shows the scenes that each character is in relative to
     # others.
     plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
-                             weight_method="weight_by_character")
+                             plot_method="networkx", plot_output_format="png")
 
     # Wordcloud of the words said by characters.
     # plot_wordcloud_character(season, "./plots")
