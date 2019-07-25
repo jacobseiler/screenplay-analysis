@@ -341,10 +341,6 @@ if __name__ == "__main__":
 
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
-
-    # Then let's do some plotting!
-
-    # This is a histogram of the number of lines said by the character across the Season.
     characters_to_plot = c_utils.determine_character_classes(characters, main_char=True,
                                                              minor_char=True)
 
@@ -355,7 +351,9 @@ if __name__ == "__main__":
         if character_name in characters_to_plot:
             characters_to_plot.remove(character_name)
 
+    # Then let's do some plotting!
 
+    # This is a histogram of the number of lines said by the character across the Season.
     #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
 
     # Make a network graph that shows the scenes that each character is in relative to

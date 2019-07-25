@@ -3,7 +3,7 @@
 This module contains the ``Episode`` class.  The ``Episode`` class contains all the
 data associated with a single episode.
 
-Several functions have been written to interface with the lists of ``Episode`` classes and can be
+Several functions have been written to interface with lists of ``Episode`` class instances and can be
 found in ``episode_utils.py``.
 
 Author: Jacob Seiler.
@@ -39,14 +39,15 @@ class Episode(object):
         self._key = key
         self._script_path = script_path
 
+        self.scenes = []
+
         self._scene_lines = []
         self._scene_characters = []
 
-        # When we parse individual scenes, we add the lines and characters to expanding
+        # When we parse individual scenes, we add the lines to expanding
         # lists.  When we hit a scene change, these temporary lists are added to
-        # `_scene_lines` and `_scene_characters`.
+        # `_scene_lines`.
         self._tmp_scene_lines = []
-        self._tmp_scene_characters = []
 
     @property
     def season_num(self):
@@ -127,7 +128,22 @@ class Episode(object):
         return self._script_path
 
     @property
+    def scenes(self):
+        """
+        list of :py:class`~Scene` instances: The scenes in this episode.
+        """
+        return self._scenes
+
+    @scenes.setter
+    def scenes(self, scenes):
+        self._scenes = scenes
+
+    @property
     def scene_lines(self):
+        """
+        list of lists of :py:class:`~Line` instances: For each scene within the episode,
+        contains a list of :py:class:`~Line` instances for all lines in that scene.
+        """
         return self._scene_lines
 
     @scene_lines.setter
@@ -136,6 +152,10 @@ class Episode(object):
 
     @property
     def scene_characters(self):
+        """
+        list of list of strings: For each scene within the episode, contains a list of
+        character in that scene.
+        """
         return self._scene_characters
 
     @scene_characters.setter

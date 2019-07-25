@@ -1,92 +1,13 @@
 from character import Character
 from episode import Episode
+from line import Line
+from scene import Scene
 
 import re
 
 import numpy as np
 import pandas as pd
 
-
-# TODO: These should be ported into their own module and listed as "GoT_Names".
-# This way the user can load the desired names to populate the list.
-# Explicitly split into 'named_character' and 'NPC'?
-def normalize_name(character_name, allowed_double_names=None):
-
-    import string
-    # First be consistent and capitalize the first letter in all names of a character.
-    # Use `capwords` rather than `title` because `title` capitalizes letters after
-    # apostrophes.
-    character_name = string.capwords(character_name)
-
-    # There are only a handful of names we (by default) allow to be multiple words.
-    if allowed_double_names is None:
-        allowed_double_names = [
-            "The Hound", "Khal Drogo", "Maester Luwin", "Septa Mordane",
-            "Waymar", "Grand Maester Pycelle", "Maester Pycelle", "Street Urchin",
-            "King's Landing Baker", "Hot Pie", "Ser Alliser",
-            "Maryn Trant", "King Joffrey", "King's Landing Page",
-            "Wine Merchant", "Stable Boy", "Old Nan", "Little Bird",
-            "The Group", "The Others At The Table", "Gold Cloak", "Crowd",
-            "Black Lorren", "The Mountain", "Pyatt Pree", "Eddison Tollett",
-            "Kraznys Mo Nakloz", "Grey Worm", "Ser Dontos", "Dying Man", "Old Man",
-            "Blone Prostitute", "Black Haired Prostitute", "Sand Snakes", "High Sparrow",
-            "Slave Owner", "Night's Watchman", "Khal Moro", "Young Rodrik", "Young Ned",
-            "Three-Eyed Raven", "Young Lyanna", "Young Hodor", "Lady Walda", "Lady Crane",
-            "Maester Aemon", "Ser Vardis", "Maester Walkan", "Maester Pycelle",
-            "High Septon", "Black Walder"
-        ]
-
-    # Populate a bunch of <House> <scout/warrior/guards>.
-    houses = [
-        "Lannister", "Stark", "Tyrell", "Baratheon", "Kings", "Nights Watch",
-        "Kings Landing", "Wounded", "Frey"
-    ]
-    NPC_classes = ["Soldier", "soldier", "Scout", "Warrior", "Guards", "Bannerman", "Bannermen",
-                   "Guard", "Boy"]
-    random_NPCs = []
-    for house in houses:
-        for NPC_class in NPC_classes:
-            random_NPCs.append(f"{house} {NPC_class}")
-
-    allowed_double_names = allowed_double_names + random_NPCs
-
-    # Now if a character's name is not allowed to be double, we will split it into two and
-    # take the first name.
-    if character_name not in allowed_double_names:
-        character_name = character_name.split()[0]
-
-    # We also map some names explicitly to others...
-    name_map = {
-        "Three-eyed": "Three-Eyed Raven",
-        "Three-Eyed": "Three-Eyed Raven",
-        "Three": "Three-Eyed Raven",
-        "Eddard": "Ned",
-        "Samwell": "Sam",
-        "Maester Aemon": "Aemon",
-        "Royce": "Waymar",
-        "Sandor": "The Hound",
-        "Hound": "The Hound",
-        "Luwin": "Maester Luwin",
-        "Drogo": "Khal Drogo",
-        "Grand Maester Pycelle": "Pycelle",
-        "Maester Pycelle": "Pycelle",
-        "King Joffrey": "Joffrey",
-        "Samwell": "Sam",
-        "Ser Alliser": "Alliser",
-        "Baelish": "Littlefinger",
-        "Petyr": "Littlefinger",
-        "Mountain": "The Mountain",
-        "Gregor": "The Mountain",
-        "Sparrow": "High Sparrow",
-        "Blackfish": "Brynden",
-        "Twyin": "Tywin", # Spelling lul.
-        "Rodrick": "Rodrik"  # Spelling.
-    }
-
-    if character_name in name_map:
-        character_name = name_map[character_name]
-
-    return character_name
 
 def parse_episode(fname, episode, debug=False):
 
@@ -96,6 +17,9 @@ def parse_episode(fname, episode, debug=False):
         print(f"Script has been flagged as not existing for s{episode.season_num:02}"
               f"e{episode.episode_num:02}. Skipping.")
         return
+
+    # Start with a new scene.
+    episode.current_scene = Scene(episode.season_num, episode.episode_num)
 
     with open(fname, "r") as f:
 
@@ -116,9 +40,8 @@ def parse_episode(fname, episode, debug=False):
             parse_character_line(line, episode, debug=debug)
 
     # Add the final scene to the episode.
-    episode.scene_lines.append(episode._tmp_scene_lines)
-    episode.scene_characters.append(episode._tmp_scene_characters)
-
+    episode.current_scene.determine_characters_in_scene()
+    episode.scenes.append(episode.current_scene)
 
 
 def parse_character_line(line, episode, debug=False):
@@ -129,33 +52,35 @@ def parse_character_line(line, episode, debug=False):
     # The format of the character line will change slightly depending upon the episode and
     # season.  Let's use a dedicated function to separate the line into the character name
     # and their spoken line.
-    character_name, spoken_line = regex_character_line(line, episode, debug=debug)
+    spoken_line = regex_character_line(line, episode, debug=debug)
 
     # A character didn't speak this line.
-    if character_name is None or spoken_line is None:
+    if spoken_line is None:
 
         # However, it could be the case that we've hit a scene change.
         scene_change = determine_if_scene_change(line, episode, debug=debug)
 
         if scene_change:
-            # If so, add all of the characters that have spoken (and their lines) to the list
-            # and reset the tracking.
-            episode.scene_lines.append(episode._tmp_scene_lines)
-            episode.scene_characters.append(episode._tmp_scene_characters)
+            # If so, add all of lines to the list and reset the tracking.
 
-            episode._tmp_scene_lines = []
-            episode._tmp_scene_characters = []
+            # Careful, maybe something happened and there weren't actually any lines added
+            # to this scene yet.
+            if len(episode.current_scene.lines) > 0:
+                episode.current_scene.determine_characters_in_scene()
+                episode.scenes.append(episode.current_scene)
+
+            episode.current_scene = Scene(episode.season_num, episode.episode_num)
 
         return
 
-    # At this point, the assigned character has been given a line. However,
-    # some scripts name characters slightly differently.  For example, "Cersei" in one
-    # script may be "Cersei Baratheon" in another or "CERSEI LANNISTER" in another
-    # different one.  Hence let's normalize the name so it is consistent across episodes
-    # and seasons.
-    character_name = normalize_name(character_name)
+    # At this point, we have verified that a character spoke the line. Add some extra info
+    # for further tracking.
+    spoken_line.season_num = episode.season_num
+    spoken_line.episode_num = episode.episode_num
 
-    # episode.character_line is a dict["character_name": list of lines spoken].
+    character_name = spoken_line.character_name
+
+    # episode.character_line is a dict["character_name": list of Lines].
     # So let's check if we have already instantiated this character. If not, initialize.
     if character_name not in episode.character_lines:
         episode.character_lines[character_name] = []
@@ -163,16 +88,12 @@ def parse_character_line(line, episode, debug=False):
     # Update the spoken line.
     episode.character_lines[character_name].append(spoken_line)
 
-    # Add the line the current scene.
-    episode._tmp_scene_lines.append(spoken_line)
+    # Update the scene this character spoke in.
+    episode.current_scene.lines.append(spoken_line)
 
     if character_name == "King's":
         print(f"{episode.season_num} {episode.episode_num}")
-        print(spoken_line)
-
-    # Character may already be in the scene...
-    if character_name not in episode._tmp_scene_characters:
-        episode._tmp_scene_characters.append(character_name)
+        print(spoken_line.spoken_line)
 
 
 def determine_if_scene_change(line, episode, debug=False):
@@ -206,18 +127,19 @@ def regex_character_line(line, episode, debug=False):
     # These are all scene descriptions.
     if line[0] == "[" or line[0] == "_" or "CUT TO" in line or "_CUT" in line \
                     or "INT" in line or "EXT" in line:
-        return None, None
+        return None
 
     if episode.character_format == "**CHARACTER_NAME:**":
-        character_name, spoken_line = parse_stars_character_line(line, debug=debug)
+        spoken_line = parse_stars_character_line(line, debug=debug)
     elif episode.character_format == "CHARACTER_NAME:":
-        character_name, spoken_line = parse_capital_character_line(line, debug=debug)
+        spoken_line = parse_capital_character_line(line, debug=debug)
     else:
         print(f"Character format for s{episode.season_num:02}e{episode.episode_num:02} "
               "is {episode.character_format}. This is not a recognised format.")
         raise ValueError
 
-    return character_name, spoken_line
+
+    return spoken_line
 
 
 def parse_capital_character_line(line, debug=False):
@@ -236,7 +158,7 @@ def parse_capital_character_line(line, debug=False):
 
     # Garbage lines will have length less than 3.
     if len(character_line) < 3:
-        return None, None
+        return None
 
     # The character name has an extra ":" at the end. Eliminate it.
     character_name = character_line[1][:-1]
@@ -246,7 +168,7 @@ def parse_capital_character_line(line, debug=False):
 
     # To be a valid line, all letters must be upper case.
     if character_name != character_name.upper():
-        return None, None
+        return None
 
     # The spoken line is the final element of `character_line`.
     spoken_line = character_line[2]
@@ -261,13 +183,17 @@ def parse_capital_character_line(line, debug=False):
     # letters, they've been captured by our method.  In these instances, the
     # `spoke_line` is empty. So if the spoken line is empty, don't count anything.
     if spoken_line == "":
-        return None, None
+        return None
+
+    # At this point we're sure it was an actual line. So instantiate a Line instance and
+    # return it.
+    _line = Line(character_name, spoken_line)
 
     if debug:
         print(f"Character name {character_name}")
         print(f"Spoken line {spoken_line}")
 
-    return character_name, spoken_line
+    return _line
 
 
 
@@ -294,7 +220,7 @@ def parse_stars_character_line(line, debug=False):
 
     # Garbage lines will have length less than 5.
     if len(character_line) < 5:
-        return None, None
+        return None
 
     # Otherwise, let's filter out into a list that is [character_name, spoken_line].
     filtered_line = list(filter(None, character_line))
@@ -318,7 +244,11 @@ def parse_stars_character_line(line, debug=False):
     # Still a little bit of white space at the start and end.
     spoken_line = spoken_line.strip()
 
-    return character_name, spoken_line
+    # At this point we're sure it was an actual line. So instantiate a Line instance and
+    # return it.
+    _line = Line(character_name, spoken_line)
+
+    return _line
 
 
 def parse_all_eps(season_nums, episode_nums, debug=False):
