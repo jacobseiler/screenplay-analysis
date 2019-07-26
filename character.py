@@ -106,13 +106,3 @@ class Character(object):
             for line in self._episode_lines[episode]:
                 for word in line.split():
                     count[word] += 1
-
-    def lines_in_episode(self, season_num, episode_num):
-
-        lines = []
-        key_name = f"s{season_num:02}e{episode_num:02}"
-
-        for line in self.episode_lines[key_name]:
-            lines.append(line.spoken_line)
-
-        return lines

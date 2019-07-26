@@ -339,10 +339,11 @@ if __name__ == "__main__":
     characters = c_utils.init_characters_in_episodes(episodes)
     c_utils.determine_lines_per_episode(episodes, characters)
 
+    print(characters["Tyrion"].episode_lines["s01e01"])
+    exit()
+
     #TODO Build a "All lines by character" property.
 
-    print(characters["Tyrion"].lines_in_episode(1, 5))
-    exit()
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
     characters_to_plot = c_utils.determine_character_classes(characters, main_char=True,
