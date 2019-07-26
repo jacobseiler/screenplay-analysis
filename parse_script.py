@@ -40,7 +40,6 @@ def parse_episode(fname, episode, debug=False):
             parse_character_line(line, episode, debug=debug)
 
     # Add the final scene to the episode.
-    episode.current_scene.determine_characters_in_scene()
     episode.scenes.append(episode.current_scene)
 
 
@@ -66,7 +65,6 @@ def parse_character_line(line, episode, debug=False):
             # Careful, maybe something happened and there weren't actually any lines added
             # to this scene yet.
             if len(episode.current_scene.lines) > 0:
-                episode.current_scene.determine_characters_in_scene()
                 episode.scenes.append(episode.current_scene)
 
             episode.current_scene = Scene(episode.season_num, episode.episode_num)

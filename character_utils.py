@@ -71,14 +71,14 @@ def determine_scene_interaction(episodes, characters, debug_name_one=None,
 
             # Then within each scene, we want to add all OTHER characters to that
             # character's appearance dict.
-            for character_name in scene.character_names:
+            for character_name in scene.characters:
 
                 scene_dict = characters[character_name].scene_appearance_dict
 
                 # Track how many scenes each character was in.
                 characters[character_name].num_scenes += 1
 
-                for other_character_name in scene.character_names:
+                for other_character_name in scene.characters:
 
                     if character_name == debug_name_one and \
                         other_character_name == debug_name_two:
