@@ -162,7 +162,12 @@ class Episode(object):
     def scene_characters(self, scene_characters):
         self._scene_characters = scene_characters
 
-
+    @property
+    def num_scenes(self):
+        """
+        int: Number of scenes in the episode.
+        """
+        return len(self._scenes)
 
     def summarise_episode(self, verbose=False):
 

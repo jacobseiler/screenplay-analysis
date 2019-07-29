@@ -194,9 +194,8 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
         plt.close()
 
 
-def plot_scene_network_graph(characters, episodes, plot_output_path,
-                             characters_to_plot=None, plot_method="networkx",
-                             plot_output_format="png"):
+def plot_scene_network_graph(characters, episodes, output_fname,
+                             characters_to_plot=None, plot_method="networkx", pos=None):
 
     allowed_plot_methods = ["networkx", "bokeh"]
     if plot_method not in allowed_plot_methods:
@@ -217,12 +216,20 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
 
     G = nx.Graph()
 
-    # The nodes of the graph will be the characters.
-    G.add_nodes_from(characters_to_plot)
+    # When we calculate weights or sizes, we want to normalize by the total number of
+    # scenes across all episodes.
+    tot_num_scenes = 0
+    for episode in episodes:
+        tot_num_scenes += episode.num_scenes
 
     # Now for each character, the weight of the edges will be scaled by the number of
     # times they appear with the other character.
+    node_size = {}
     for character_name in characters_to_plot:
+
+        G.add_node(character_name)
+        node_size[character_name] = characters[character_name].num_scenes / \
+                                        tot_num_scenes*10000 * np.sqrt(len(episodes))
 
         appearance_dict = characters[character_name].scene_appearance_dict
         for other_character_name in appearance_dict.keys():
@@ -238,21 +245,59 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
             num_scenes_A = characters[character_name].num_scenes
             num_scenes_B = characters[other_character_name].num_scenes
 
-            weight = A_in_B / (num_scenes_A + num_scenes_B)
+            frac_scenes_A = characters[character_name].num_scenes / tot_num_scenes
+            frac_scenes_B = characters[other_character_name].num_scenes / tot_num_scenes
 
-            G.add_edge(character_name, other_character_name, weight=weight*50)
+            if num_scenes_A == 0 or num_scenes_B == 0:
+                continue
+
+            weight = A_in_B / (num_scenes_A * num_scenes_B) / tot_num_scenes
+
+            #print(f"{character_name} -> {other_character_name}: {weight}")
+            #print(f"{character_name} -> {other_character_name}: {weight/tot_num_scenes}")
+
+            G.add_edge(character_name, other_character_name,
+                       weight=weight*250*len(episodes)*len(episodes))
+
 
 
     # If we're plotting using solely networkx, it uses an MPL axis.
     if plot_method == "networkx":
-        fig = plt.figure(figsize=(24,24))
+        fig = plt.figure(figsize=(20,20))
         ax = fig.add_subplot(111)
 
         # We first now draw all the nodes (i.e., characters) and their labels.
-        pos = nx.spring_layout(G)
+        if not pos:
+            pos = nx.spring_layout(G)
 
-        nx.draw_networkx_nodes(G,pos,node_color='green',node_size=3000)
-        nx.draw_networkx_labels(G, pos)
+        # We need to ensure that all the nodes have the correct sizes. Use the ordering of
+        # the nodes that's used to plot.
+        node_size_list = []
+        for character_name in G.nodes():
+            node_size_list.append(node_size[character_name])
+
+        nx.draw_networkx_nodes(G, pos, node_color='b', node_size=node_size_list, ax=ax)
+
+        # For each character, we want the size of their label to be relative to the size of
+        # their node.
+        label_size_list = []
+
+        valid_nodes = np.where(np.array(node_size_list) > 0)[0]
+        min_node_size = min(np.array(node_size_list)[valid_nodes])
+
+        label_size_bins = np.logspace(np.log10(min_node_size), np.log10(max(node_size_list)), num=10)
+        label_size_binned = np.digitize(node_size_list, label_size_bins)
+
+        print(label_size_binned)
+
+        for char_num, character_name in enumerate(G.nodes()):
+            labels = {}
+            labels[character_name] = character_name
+
+            # Only print labels for non-zero sized nodes.
+            if node_size_list[char_num] > 0:
+                nx.draw_networkx_labels(G, pos, labels, font_size=6 + label_size_binned[char_num],
+                                        font_color="white", ax=ax)
 
     # Otherwise, need a specific Bokeh axis.
     elif plot_method == "bokeh":
@@ -276,7 +321,6 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
     nx.set_edge_attributes(G, edge_attrs, "weight")
     unique_weights = list(set(all_weights))
 
-
     # If we're only plotting with networkx, go through and manually plot.
     if plot_method == "networkx":
         for weight in unique_weights:
@@ -285,11 +329,12 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
                                 if edge_attr['weight']==weight]
 
             width = weight
-            nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width)
+            nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width,
+                                   edge_color="#D3D3D3", ax=ax)
 
-        fig.tight_layout()
+        #fig.tight_layout()
 
-        output_fname = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
+        ax.set_facecolor('k')
         fig.savefig(output_fname)
 
     # Otherwise, need to get fancy.
@@ -319,11 +364,81 @@ def plot_scene_network_graph(characters, episodes, plot_output_path,
 
         plot.renderers.append(graph_renderer)
 
-        output_fname = "{0}/scene_graph.{1}".format(plot_output_path, plot_output_format)
         output_file(output_fname)
         save(plot)
 
     print(f"Saved file to {output_fname}")
+    return pos
+
+
+def plot_cumulative_scene_network_graphs(episodes, plot_output_path, main_char=False,
+                                         minor_char=False, chars_to_remove=None):
+
+    # First, let's create a network graph using ALL episodes. From this, we will fix the
+    # position of the nodes (characters) and use those same positions for all future
+    # plots.
+    characters = generate_scene_interactions_for_graph(episodes, main_char, minor_char,
+                                                       chars_to_remove)
+
+    # Now plot the network graph and remember the positions.
+    final_episode_key = episodes[-1].key
+    output_fname = f"{plot_output_path}/scene_graph_{final_episode_key}.png"
+    node_pos = plot_scene_network_graph(characters, episodes, output_fname,
+                                        plot_method="networkx", pos=None)
+
+    # When plotting the other episodes, we will want to plot ALL characters, regardless of
+    # if they appear in the episodes. For characters we don't appear, their node/edge size
+    # will be 0, but still included to keep the sizing of the graph correct.
+    all_characters = characters
+
+    # Ok we have all the positions. Now iterate cumulatively through all the episodes and
+    # do a plot.
+    for episode_idx in range(len(episodes) - 1):
+    #for episode_idx in range(2):
+
+        these_episodes = episodes[0:episode_idx+1]
+
+        characters = generate_scene_interactions_for_graph(these_episodes, main_char, minor_char,
+                                                           chars_to_remove)
+
+        # For those characters that don't appear in the episode (but appear by final
+        # episode plotted), add them to the ``characters`` dict with zeroed values.
+        for character_name in all_characters:
+            if character_name not in characters.keys():
+                characters[character_name] = Character(character_name)
+
+        # Now plot the network graph and remember the positions.
+        final_episode_key = these_episodes[-1].key
+        output_fname = f"{plot_output_path}/scene_graph_{final_episode_key}.png"
+        _ = plot_scene_network_graph(characters, these_episodes, output_fname,
+                                     plot_method="networkx", pos=node_pos)
+
+
+def generate_scene_interactions_for_graph(episodes, main_char, minor_char, chars_to_remove):
+
+    characters = c_utils.init_characters_in_episodes(episodes)
+
+    # Determine the scene interactions for all characters.
+    c_utils.determine_scene_interaction(episodes, characters)
+
+    # Then determine those characters that we want to plot.
+    characters_to_plot = c_utils.determine_character_classes(characters, main_char,
+                                                             minor_char)
+
+    # Want to return only those characters asked for. Can't hash a list so have to iterate
+    # manually.
+    characters_to_return = {}
+    for character_name in characters_to_plot:
+
+        # Check if we're excluding any characters.
+        if chars_to_remove:
+            if character_name in chars_to_remove:
+                continue
+
+        # Otherwise, add this character.
+        characters_to_return[character_name] = characters[character_name]
+
+    return characters_to_return
 
 
 if __name__ == "__main__":
@@ -335,9 +450,14 @@ if __name__ == "__main__":
 
     episodes = parse_all_eps(season_nums, episode_nums, debug)
 
+    # Build a network graph of the scene interactions for each cumulative episode. That
+    # is, create a graph that is s01e01, s01e01 + s01e02, s01e01 + s01e02 + s01e03, etc.
+    plot_cumulative_scene_network_graphs(episodes, "./cumu_plots", main_char=True, minor_char=True)
+
+    """
     # Instead of breaking into episodes, can also distribute as characters.
     characters = c_utils.init_characters_in_episodes(episodes)
-    c_utils.determine_lines_per_episode(episodes, characters)
+    #c_utils.determine_lines_per_episode(episodes, characters)
 
     #TODO Build a "All lines by character" property.
 
@@ -347,8 +467,8 @@ if __name__ == "__main__":
                                                              minor_char=True)
 
     # Let's remove some characters to make the plots look nicer.
-    #to_remove = ["Khal Drogo", "The Mountain"]
-    to_remove = []
+    to_remove = ["The Mountain"]
+    #to_remove = []
     for character_name in to_remove:
         if character_name in characters_to_plot:
             characters_to_plot.remove(character_name)
@@ -365,3 +485,4 @@ if __name__ == "__main__":
 
     # Wordcloud of the words said by characters.
     # plot_wordcloud_character(season, "./plots")
+    """

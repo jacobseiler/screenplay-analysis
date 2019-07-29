@@ -63,8 +63,6 @@ def determine_lines_per_episode(episodes, characters):
 def determine_scene_interaction(episodes, characters, debug_name_one=None,
                                 debug_name_two=None):
 
-    #from textblob import TextBlob
-
     # Go through each episode and add the characters in each scene to a dictionary.
     for episode in episodes:
         for scene_num, scene in enumerate(episode.scenes):
@@ -207,4 +205,3 @@ def normalize_name(character_name, allowed_double_names=None):
         character_name = name_map[character_name]
 
     return character_name
-
