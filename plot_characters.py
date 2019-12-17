@@ -253,11 +253,16 @@ def plot_scene_network_graph(characters, episodes, output_fname,
 
             weight = A_in_B / (num_scenes_A * num_scenes_B) / tot_num_scenes
 
-            #print(f"{character_name} -> {other_character_name}: {weight}")
+            weight *= 250 * len(episodes) * len(episodes)
+
+            if weight > 10:
+                weight = 10
+
+            print(f"{character_name} -> {other_character_name}: {weight}")
             #print(f"{character_name} -> {other_character_name}: {weight/tot_num_scenes}")
 
             G.add_edge(character_name, other_character_name,
-                       weight=weight*250*len(episodes)*len(episodes))
+                       weight=weight)
 
 
 
@@ -285,10 +290,8 @@ def plot_scene_network_graph(characters, episodes, output_fname,
         valid_nodes = np.where(np.array(node_size_list) > 0)[0]
         min_node_size = min(np.array(node_size_list)[valid_nodes])
 
-        label_size_bins = np.logspace(np.log10(min_node_size), np.log10(max(node_size_list)), num=10)
+        label_size_bins = np.logspace(np.log10(min_node_size), np.log10(max(node_size_list)), num=9)
         label_size_binned = np.digitize(node_size_list, label_size_bins)
-
-        print(label_size_binned)
 
         for char_num, character_name in enumerate(G.nodes()):
             labels = {}
