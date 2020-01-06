@@ -5,3 +5,4 @@
 !formats.txt
 
 __pycache__
+.env/

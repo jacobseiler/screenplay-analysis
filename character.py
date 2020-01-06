@@ -35,7 +35,7 @@ class Character(object):
     @property
     def name(self):
         """
-        string: Name of the character.
+        str: Name of the character.
         """
         return self._name
 

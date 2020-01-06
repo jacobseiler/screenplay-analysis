@@ -40,28 +40,53 @@ def init_characters_in_episodes(episodes):
 
 
 def determine_lines_per_episode(episodes, characters):
+    """
+    Determines the number of lines spoken by each character in specified episodes.
 
-    # For each character, add their lines from each episode.
+    Parameters
+    ----------
+
+    episodes : List of :py:class:`~Episode` instances
+        The episodes we're analysing.
+
+    characters : List of :py:class:`~Character` instances
+        Characters we're analysing.
+
+    Returns
+    -------
+
+    None.  The values of :py:attr:`~Character.episode_lines` are updated directly.
+    """
+
     for character_name in characters.keys():
 
         character = characters[character_name]
-
         for episode in episodes:
 
-            # Check if this character was in this episode. If not, move to the next
-            # episode.
+            # Check if this character was in this episode.
             try:
                 lines_in_ep = episode.character_lines[character_name]
             except KeyError:
                 continue
 
-            # Add these lines to a dictionary.
             key_name = f"s{episode.season_num:02}e{episode.episode_num:02}"
             character.episode_lines[key_name] = lines_in_ep
 
 
 def determine_scene_interaction(episodes, characters, debug_name_one=None,
                                 debug_name_two=None):
+    """
+    For given episodes and characters, determine the number of scenes that they appear together.
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+    None.  The values of :py:attr:`~Character.scene_appearance_dict` are updated directly.
+    """
 
     # Go through each episode and add the characters in each scene to a dictionary.
     for episode in episodes:
