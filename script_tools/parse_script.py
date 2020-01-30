@@ -1,12 +1,15 @@
-from character import Character
-from episode import Episode
-from line import Line
-from scene import Scene
+from containers.character import Character
+from containers.episode import Episode
+from containers.line import Line
+from containers.scene import Scene
 
 import re
 
 import numpy as np
 import pandas as pd
+
+#TODO
+# * Don't hard code the path for the scripts.
 
 
 def parse_episode(fname, episode, debug=False):
@@ -273,7 +276,7 @@ def parse_all_eps(season_nums, episode_nums, debug=False):
                 continue
 
             key = f"s{season_num:02}e{episode_num:02}"
-            script_path = f"/home/jseiler/screenplay-analysis/scripts/{key}.txt"
+            script_path = f"./script_tools/scripts/{key}.txt"
 
             episode = Episode(season_num, episode_num, key, script_path)
 

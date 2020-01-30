@@ -57,6 +57,7 @@ def scrape_html_and_save(url, fname_out, remove_brackets=False):
         os.remove(f"{fname_out}_tmp.txt")
         print("Deleted old tmp file.")
 
+
 def generate_episode_names(url, episodes_fname, debug=False):
 
     # First scrape the URL and turn the ugly HTML to nicely formatted text.
@@ -112,7 +113,7 @@ def generate_script(url, save_path):
 
 if __name__ == "__main__":
 
-    seasons = np.arange(2,9)
+    seasons = np.arange(1, 9)
     for season_num in seasons:
 
         # First find the names of the episodes in this Season.

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 This module contains the ``Character`` class.  The ``Character`` class contains all the
 data associated with an individual character.

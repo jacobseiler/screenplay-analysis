@@ -1,4 +1,4 @@
-from character import Character
+from .character import Character
 
 
 def init_characters_in_episodes(episodes):

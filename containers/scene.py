@@ -1,5 +1,3 @@
-# TODO: Add a __repr__ and __str__ to describe a scene.
-
 class Scene(object):
 
     def __init__(self, season_num, episode_num):

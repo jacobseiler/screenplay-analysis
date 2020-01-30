@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 This module contains the ``Episode`` class.  The ``Episode`` class contains all the
 data associated with a single episode.

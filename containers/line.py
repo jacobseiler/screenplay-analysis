@@ -1,6 +1,4 @@
-#TODO: Add a ``__repr__`` that is basically "Name: spoken_line."
-
-from character_utils import normalize_name
+from .character_utils import normalize_name
 
 from textblob import TextBlob
 
@@ -44,7 +42,6 @@ class Line(object):
     @property
     def polarity(self):
         return self._polarity
-
 
     def __repr__(self):
         """

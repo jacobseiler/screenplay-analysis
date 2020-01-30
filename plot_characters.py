@@ -1,15 +1,20 @@
-import character_utils as c_utils
-import episode_utils as e_utils
-from character import Character
-from episode import Episode
-from parse_script import parse_all_eps
+import containers.character_utils as c_utils
+import containers.episode_utils as e_utils
+from containers.character import Character
+from containers.episode import Episode
+from script_tools.parse_script import parse_all_eps
+
+from typing import Dict, List, Optional
 
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-colors = ["r", "b", "g"]
+colors = ["r", "b", "g", "c", "m"]
+
+# TODO
+# * Don't force "plots" directory as output.  If I do, check and make it doesn't exist.
 
 
 def adjust_legend(ax, location="upper right", scatter_plot=False):
@@ -18,7 +23,6 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
 
     Parameters
     ----------
-
     ax : ``matplotlib`` axes object
         The axis whose legend we're adjusting
 
@@ -31,7 +35,6 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
 
     Returns
     -------
-
     None. The legend is placed directly onto the axis.
     """
 
@@ -53,11 +56,56 @@ def adjust_legend(ax, location="upper right", scatter_plot=False):
                 handle.set_sizes([10.0])
 
 
-def plot_line_count_hist(characters, episodes, plot_output_path,
-                         characters_to_plot=None, plot_output_format="png"):
+def plot_line_count_hist(
+    characters: Dict[str, Character],
+    episodes: List[Episode],
+    characters_to_plot: Optional[List[str]] = None,
+    plot_output_path: str = "./plots",
+    plot_output_format: str = ".png"
+):
+    """
+    Plots the number of lines spoken by the characters as a function of
+    episode.
+
+    Parameters
+    ----------
+    characters
+        The information related to all the characters analysed.  May contain
+        characters that will not be plotted, as specified by
+        ``characters_to_plot``.  Keys are the character's name.
+
+    episodes
+        The information related to all the episodes that will be plotted.
+
+    characters_to_plot : optional, list of str
+        Specifies which characters are to be plotted.  Shouldn't be too many,
+        otherwise the plot will look yucky.  If not specified, will use the
+        keys of ``characters``; however if this list is greater than 3
+        characters, will default to ``["Tyrion", "Jon", "Daenerys"]``.
+
+    plot_output_path : optional, str
+        The base path where the plot will be saved.
+
+    plot_output_format : optional, str
+        The format the plot is saved as.
+
+    TODO
+    ----
+    I think this should be changed to like a stacked hist. Maybe this would
+    require is to be a cumulative plot.
+
+    Update tick label font size.
+    """
 
     if characters_to_plot is None:
         characters_to_plot = characters.keys()
+
+        if len(characters_to_plot) > 5:
+            print(
+                "Number of characters in the ``characters`` dictionary is "
+                "too large.  Defaulting to only plotting 5 characters."
+            )
+            characters_to_plot = ["Tyrion", "Jon", "Daenerys"]
 
     fig = plt.figure(figsize=(32, 16))
     ax = fig.add_subplot(111)
@@ -95,22 +143,26 @@ def plot_line_count_hist(characters, episodes, plot_output_path,
             # have.
             x_pos = ep_count + bar_width*character_num
 
-            ax.bar(x_pos, lines_in_ep, width=bar_width, label=label,
-                color=colors[character_num])
+            ax.bar(
+                x_pos,
+                lines_in_ep,
+                width=bar_width,
+                label=label,
+                color=colors[character_num]
+            )
 
             # Remember the episode numbers so we can add to the x-axis later.
             if character_num == 0:
                 xticklabels.append(episode.episode_num)
 
     # The histogram has been made. Now let's go through and add some text to prettify.
-
     season_labels, num_eps_season = e_utils.determine_num_episodes_season(episodes)
 
     for season_idx in range(len(num_eps_season)):
 
         # Place a dotted line for reference to show the end of Season.
         # Need to know the total number of episodes before this season, so use cumsum.
-        line_loc = np.cumsum(num_eps_season)[season_idx] + (bar_width*1.5)
+        line_loc = np.cumsum(num_eps_season)[season_idx] + (bar_width*2.5)
         ax.axvline(line_loc, linestyle='--', linewidth=5)
 
         # Then place some text.
@@ -139,19 +191,18 @@ def plot_line_count_hist(characters, episodes, plot_output_path,
     ax.set_ylim([0, max_lines+5])
 
     ax.xaxis.set_major_locator(plt.MultipleLocator(1))
-    ax.set_xticklabels(xticklabels)
+    ax.set_xticklabels(xticklabels, fontsize=30)
 
     adjust_legend(ax, location="upper left", scatter_plot=True)
-
     fig.tight_layout()
 
-    output_file = "{0}/line_count.{1}".format(plot_output_path, plot_output_format)
+    output_file = "{0}/line_count{1}".format(plot_output_path, plot_output_format)
     fig.savefig(output_file)
     print("Saved file to {0}".format(output_file))
     plt.close()
 
 
-def plot_wordcloud_character(season, plot_output_path, plot_output_format="png"):
+def plot_wordcloud_character(episodes, plot_output_path, plot_output_format="png"):
 
     from wordcloud import WordCloud, STOPWORDS
 
@@ -167,7 +218,7 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        for episode in season:
+        for episode in episodes:
 
             # Maybe the character didn't appear in this episode.
             try:
@@ -194,8 +245,47 @@ def plot_wordcloud_character(season, plot_output_path, plot_output_format="png")
         plt.close()
 
 
-def plot_scene_network_graph(characters, episodes, output_fname,
-                             characters_to_plot=None, plot_method="networkx", pos=None):
+def plot_scene_network_graph(
+    characters: Dict[str, Character],
+    episodes: List[Episode],
+    output_fname: str,
+    characters_to_plot: List[str] = None,
+    plot_method: str = "networkx",
+    pos: Optional[Dict[str, np.array]] = None
+) -> Dict[str, np.array]:
+    """
+    Plots a graph showing how characters interact with each other.
+
+    Parameters
+    ----------
+
+    characters : dict with keys of character name and values of :py:class:`~containers.Character:` instances
+        Characters where the :py:attr:`~Character.scene_appearance_dict` attribute has been updated (generally through
+        :py:func:`~generate_scene_interactions_for_graph`).
+
+    episodes : list of :py:class:`~containers.Episode` instances
+        The episodes that are being plotted.
+
+    output_fname : string
+        The name of the file being saved
+
+    characters_to_plot : list of strings, optional
+        Specifies the names of characters to plot.  If not specified, will plot all characters in ``characters``.
+
+    plot_method : {"networkx", "bokeh"}
+        Specifies whether to plot a static graph using Networkx ("networkx") or an interactive one using Bokeh
+        ("bokeh").  The "bokeh" option has not been developed in a long time.
+
+    pos : dict with keys of character name and values of an array of ``[x,y]`` coordinate pairs
+        The coordinates of each character node.  If not specified, then the positions will be generated using
+        ``networkx.spring_layout``.
+
+    Returns
+    -------
+
+    pos : dict with keys of character name and values of an array of ``[x,y]`` coordinate pairs
+        The coordinates of each character node.
+    """
 
     allowed_plot_methods = ["networkx", "bokeh"]
     if plot_method not in allowed_plot_methods:
@@ -258,13 +348,11 @@ def plot_scene_network_graph(characters, episodes, output_fname,
             if weight > 10:
                 weight = 10
 
-            print(f"{character_name} -> {other_character_name}: {weight}")
-            #print(f"{character_name} -> {other_character_name}: {weight/tot_num_scenes}")
+            # print(f"{character_name} -> {other_character_name}: {weight}")
+            # print(f"{character_name} -> {other_character_name}: {weight/tot_num_scenes}")
 
             G.add_edge(character_name, other_character_name,
                        weight=weight)
-
-
 
     # If we're plotting using solely networkx, it uses an MPL axis.
     if plot_method == "networkx":
@@ -370,24 +458,65 @@ def plot_scene_network_graph(characters, episodes, output_fname,
         output_file(output_fname)
         save(plot)
 
-    print(f"Saved file to {output_fname}")
+        print(f"Saved file to {output_fname}")
+
     return pos
 
 
-def plot_cumulative_scene_network_graphs(episodes, plot_output_path, main_char=False,
-                                         minor_char=False, chars_to_remove=None):
+def plot_cumulative_scene_network_graphs(
+    episodes: List[Episode],
+    plot_output_dir: str = "./",
+    plot_main_char: bool = True,
+    plot_minor_char: bool = False,
+    chars_to_remove: Optional[List[str]] = None
+) -> None:
+    """
+    Given N episodes, plots N graphs depicting the number of interactions between characters.  That is, if passed 3
+    episodes, plots a graph of interactions for episodes {1, 2, 3}, {1, 2}, and {1].
+
+    Importantly, the position of the nodes (i.e., characters) are defined for the first iteration (i.e., using ALL
+    episodes) and then reused for all others.
+
+    Parameters
+    ----------
+
+    episodes : list of :py:class:`~containers.Episode:` class instances
+        The episodes that we're plotting interactions for.
+
+    plot_output_dir : optional, str
+        Directory where the plots will be saved.
+
+    plot_main_char : optional, bool
+        If specified, will generate (and plot) interactions for main characters.  Main characters are defined in
+        :py:func:`~character_utils.determine_character_classes`.
+
+    plot_minor_char : optional, bool
+        If specified, will generate (and plot) interactions for minor characters.  Minor characters are defined in
+        :py:func:`~character_utils.determine_character_classes`.
+
+    chars_to_remove : optional, list of strings
+        Removes the specified characters from analysis.
+
+    Saves
+    -----
+
+    Saves all of the interaction graphs as ``{plot_output_dir}/scene_graph_{episode_key}.png` where ``episode_key`` is
+    the key of the episode (e.g., ``s01e02``, ``s04e05``, etc).
+    """
 
     # First, let's create a network graph using ALL episodes. From this, we will fix the
     # position of the nodes (characters) and use those same positions for all future
     # plots.
-    characters = generate_scene_interactions_for_graph(episodes, main_char, minor_char,
-                                                       chars_to_remove)
+    characters = generate_scene_interactions_for_graph(
+            episodes, plot_main_char, plot_minor_char, chars_to_remove
+    )
 
     # Now plot the network graph and remember the positions.
     final_episode_key = episodes[-1].key
-    output_fname = f"{plot_output_path}/scene_graph_{final_episode_key}.png"
-    node_pos = plot_scene_network_graph(characters, episodes, output_fname,
-                                        plot_method="networkx", pos=None)
+    output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
+    node_pos = plot_scene_network_graph(
+        characters, episodes, output_fname, plot_method="networkx", pos=None
+    )
 
     # When plotting the other episodes, we will want to plot ALL characters, regardless of
     # if they appear in the episodes. For characters we don't appear, their node/edge size
@@ -397,8 +526,6 @@ def plot_cumulative_scene_network_graphs(episodes, plot_output_path, main_char=F
     # Ok we have all the positions. Now iterate cumulatively through all the episodes and
     # do a plot.
     for episode_idx in range(len(episodes) - 1):
-    #for episode_idx in range(2):
-
         these_episodes = episodes[0:episode_idx+1]
 
         characters = generate_scene_interactions_for_graph(these_episodes, main_char, minor_char,
@@ -410,14 +537,47 @@ def plot_cumulative_scene_network_graphs(episodes, plot_output_path, main_char=F
             if character_name not in characters.keys():
                 characters[character_name] = Character(character_name)
 
-        # Now plot the network graph and remember the positions.
+        # Now plot the network graph.
         final_episode_key = these_episodes[-1].key
-        output_fname = f"{plot_output_path}/scene_graph_{final_episode_key}.png"
-        _ = plot_scene_network_graph(characters, these_episodes, output_fname,
-                                     plot_method="networkx", pos=node_pos)
+        output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
+        _ = plot_scene_network_graph(
+            characters, these_episodes, output_fname, plot_method="networkx", pos=node_pos
+        )
 
 
-def generate_scene_interactions_for_graph(episodes, main_char, minor_char, chars_to_remove):
+def generate_scene_interactions_for_graph(
+    episodes: List[Episode],
+    use_main_char: bool = True,
+    use_minor_char: bool = False,
+    chars_to_remove: Optional[List[str]] = None
+) -> Dict[str, Character]:
+    """
+    Generates the number of scene interactions between characters.  This is the number of times that each character
+    appears in a scene with each other character.
+
+    Parameters
+    ----------
+
+    episodes : list of :py:class:`~containers.Episode:` class instances
+        The episodes that we're plotting interactions for.
+
+    use_main_char, use_minor_char : optional, bool
+        If specified, will generate interactions for main and minor characters characters.  Characters "classes" are
+        defined in :py:func:`~character_utils.determine_character_classes`.
+
+    chars_to_remove : optional, list of strings
+        Removes the specified characters from analysis.
+
+    Returns
+    -------
+
+    characters_to_return : dict with keys of character name and values of :py:class:`~containers.Character:` instances
+        Character information for characters of the specified classes (main/minor). These character instances include
+        the :py:attr:`~Character.scene_appearance_dict` attribute updated.
+    """
+
+    if not chars_to_remove:
+        chars_to_remove = []
 
     characters = c_utils.init_characters_in_episodes(episodes)
 
@@ -425,21 +585,16 @@ def generate_scene_interactions_for_graph(episodes, main_char, minor_char, chars
     c_utils.determine_scene_interaction(episodes, characters)
 
     # Then determine those characters that we want to plot.
-    characters_to_plot = c_utils.determine_character_classes(characters, main_char,
-                                                             minor_char)
+    characters_to_plot = c_utils.determine_character_classes(
+        characters, use_main_char, use_minor_char
+    )
 
     # Want to return only those characters asked for. Can't hash a list so have to iterate
     # manually.
-    characters_to_return = {}
-    for character_name in characters_to_plot:
-
-        # Check if we're excluding any characters.
-        if chars_to_remove:
-            if character_name in chars_to_remove:
-                continue
-
-        # Otherwise, add this character.
-        characters_to_return[character_name] = characters[character_name]
+    characters_to_return = {
+        character_name: characters[character_name]
+        for character_name in characters_to_plot if character_name not in chars_to_remove
+    }
 
     return characters_to_return
 
@@ -455,12 +610,12 @@ if __name__ == "__main__":
 
     # Build a network graph of the scene interactions for each cumulative episode. That
     # is, create a graph that is s01e01, s01e01 + s01e02, s01e01 + s01e02 + s01e03, etc.
-    plot_cumulative_scene_network_graphs(episodes, "./cumu_plots", main_char=True, minor_char=True)
+    plot_cumulative_scene_network_graphs(episodes, "./cumu_plots", plot_main_char=True, plot_minor_char=True)
 
-    """
+
     # Instead of breaking into episodes, can also distribute as characters.
     characters = c_utils.init_characters_in_episodes(episodes)
-    #c_utils.determine_lines_per_episode(episodes, characters)
+    c_utils.determine_lines_per_episode(episodes, characters)
 
     #TODO Build a "All lines by character" property.
 
@@ -479,13 +634,7 @@ if __name__ == "__main__":
     # Then let's do some plotting!
 
     # This is a histogram of the number of lines said by the character across the Season.
-    #plot_line_count_hist(characters, episodes, "./plots", characters_to_plot)
-
-    # Make a network graph that shows the scenes that each character is in relative to
-    # others.
-    plot_scene_network_graph(characters, episodes, "./plots", characters_to_plot,
-                             plot_method="networkx", plot_output_format="png")
+    plot_line_count_hist(characters, episodes, characters_to_plot=None)
 
     # Wordcloud of the words said by characters.
-    # plot_wordcloud_character(season, "./plots")
-    """
+    # plot_wordcloud_character(episodes, "./plots")
