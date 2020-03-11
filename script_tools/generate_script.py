@@ -99,30 +99,21 @@ def generate_episode_names(url, episodes_fname, debug=False):
     return episode_names
 
 
-def generate_script(url, save_path):
-
-    text = scrape_html_to_text(url)
-
-    # Now save the trimmed text.
-    fname_out = "{0}/s01e02.txt".format(save_path)
-    with open(fname_out, "w") as f:
-        f.write(text)
-    print(f"Saved to {fname_out}")
-
-
-
 if __name__ == "__main__":
 
-    seasons = np.arange(1, 9)
+    seasons = np.arange(8, 9)
     for season_num in seasons:
 
         # First find the names of the episodes in this Season.
         url = f"https://genius.com/albums/Game-of-thrones/Season-{season_num}-scripts"
-        fname_out = f"/home/jseiler/screenplay-analysis/scripts/season-{season_num}-episodes"
+        fname_out = f"./scripts/season-{season_num}-episodes"
         episode_names = generate_episode_names(url, fname_out)
 
         # Then go through each episode and grab its scripts.
         for episode_num, episode_name in enumerate(episode_names):
+
+            if episode_num not in [2, 4]:
+                continue
 
             # For the URL, the episode names use '-' instead of spaces and use lower case
             # letter.
@@ -133,7 +124,5 @@ if __name__ == "__main__":
             url_episode_name = url_episode_name.replace(",", "").lower()
 
             url = f"https://genius.com/Game-of-thrones-{url_episode_name}-annotated"
-            fname_out = f"/home/jseiler/screenplay-analysis/scripts/s{season_num:02}e{episode_num+1:02}"
+            fname_out = f"./scripts/s{season_num:02}e{episode_num+1:02}"
             scrape_html_and_save(url, fname_out, remove_brackets=True)
-    #save_path = "/home/jseiler/screenplay-analysis/scripts"
-    #generate_script(url, save_path)

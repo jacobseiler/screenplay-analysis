@@ -6,6 +6,8 @@ from script_tools.parse_script import parse_all_eps
 
 from typing import Dict, List, Optional
 
+import matplotlib.patheffects as PathEffects
+import math
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
@@ -93,8 +95,6 @@ def plot_line_count_hist(
     ----
     I think this should be changed to like a stacked hist. Maybe this would
     require is to be a cumulative plot.
-
-    Update tick label font size.
     """
 
     if characters_to_plot is None:
@@ -103,8 +103,9 @@ def plot_line_count_hist(
         if len(characters_to_plot) > 5:
             print(
                 "Number of characters in the ``characters`` dictionary is "
-                "too large.  Defaulting to only plotting 5 characters."
+                "too large.  Defaulting to only plotting 3 characters."
             )
+            print("Specify ``characters_to_plot`` directly when calling to override.")
             characters_to_plot = ["Tyrion", "Jon", "Daenerys"]
 
     fig = plt.figure(figsize=(32, 16))
@@ -175,7 +176,7 @@ def plot_line_count_hist(
             x_loc = (np.cumsum(num_eps_season)[season_idx] + \
                 np.cumsum(num_eps_season)[season_idx-1]) / 2.0
         # Shift slightly yo.
-        x_loc -= 0.5
+        x_loc -= 0.9
 
         if max_lines > 15:
             y_loc = max_lines - 10
@@ -192,6 +193,9 @@ def plot_line_count_hist(
 
     ax.xaxis.set_major_locator(plt.MultipleLocator(1))
     ax.set_xticklabels(xticklabels, fontsize=30)
+
+    ax.yaxis.set_major_locator(plt.MultipleLocator(10))
+    ax.set_yticklabels(np.arange(-10, max_lines+5, 10), fontsize=30)
 
     adjust_legend(ax, location="upper left", scatter_plot=True)
     fig.tight_layout()
@@ -251,7 +255,7 @@ def plot_scene_network_graph(
     output_fname: str,
     characters_to_plot: List[str] = None,
     plot_method: str = "networkx",
-    pos: Optional[Dict[str, np.array]] = None
+    pos: Optional[Dict[str, np.array]] = None,
 ) -> Dict[str, np.array]:
     """
     Plots a graph showing how characters interact with each other.
@@ -293,6 +297,10 @@ def plot_scene_network_graph(
               f"The only allowed methods are {allowed_plot_methods}")
         raise ValueError
 
+    characters = c_utils.determine_character_death(characters)
+
+    episode_keys = [episode.key for episode in episodes]
+
     import networkx as nx
 
     if plot_method == "bokeh":
@@ -318,8 +326,11 @@ def plot_scene_network_graph(
     for character_name in characters_to_plot:
 
         G.add_node(character_name)
-        node_size[character_name] = characters[character_name].num_scenes / \
-                                        tot_num_scenes*10000 * np.sqrt(len(episodes))
+        node_size[character_name] = (characters[character_name].num_scenes / \
+                                        tot_num_scenes*10000 * np.sqrt(len(episodes)))
+
+        if characters[character_name].num_scenes > 0:
+            node_size[character_name] += 1000
 
         appearance_dict = characters[character_name].scene_appearance_dict
         for other_character_name in appearance_dict.keys():
@@ -343,7 +354,7 @@ def plot_scene_network_graph(
 
             weight = A_in_B / (num_scenes_A * num_scenes_B) / tot_num_scenes
 
-            weight *= 250 * len(episodes) * len(episodes)
+            weight *= 250 * math.pow(len(episodes), 1.9)
 
             if weight > 10:
                 weight = 10
@@ -369,16 +380,23 @@ def plot_scene_network_graph(
         for character_name in G.nodes():
             node_size_list.append(node_size[character_name])
 
-        nx.draw_networkx_nodes(G, pos, node_color='b', node_size=node_size_list, ax=ax)
+        # If character has died by the last episode we're plotting, then display their node in different color.
+        node_colors = [
+            "#fdae6b" if characters[character_name].episode_death in episode_keys else "#3182bd"
+            for character_name in G.nodes()
+        ]
+
+        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_size_list, ax=ax)
 
         # For each character, we want the size of their label to be relative to the size of
         # their node.
         label_size_list = []
 
         valid_nodes = np.where(np.array(node_size_list) > 0)[0]
-        min_node_size = min(np.array(node_size_list)[valid_nodes])
+        min_node_size = min(np.array(node_size_list)[valid_nodes]) + 100
+        max_node_size = max(node_size_list) + 100
 
-        label_size_bins = np.logspace(np.log10(min_node_size), np.log10(max(node_size_list)), num=9)
+        label_size_bins = np.logspace(np.log10(min_node_size), np.log10(max_node_size), num=7)
         label_size_binned = np.digitize(node_size_list, label_size_bins)
 
         for char_num, character_name in enumerate(G.nodes()):
@@ -387,8 +405,9 @@ def plot_scene_network_graph(
 
             # Only print labels for non-zero sized nodes.
             if node_size_list[char_num] > 0:
-                nx.draw_networkx_labels(G, pos, labels, font_size=6 + label_size_binned[char_num],
-                                        font_color="white", ax=ax)
+                bbox_dict = dict(fc="grey", alpha=0.75)
+                nx.draw_networkx_labels(G, pos, labels, font_size=12 + label_size_binned[char_num],
+                                        font_color="white", ax=ax, bbox=bbox_dict)
 
     # Otherwise, need a specific Bokeh axis.
     elif plot_method == "bokeh":
@@ -423,10 +442,13 @@ def plot_scene_network_graph(
             nx.draw_networkx_edges(G, pos, edgelist=weighted_edges, width=width,
                                    edge_color="#D3D3D3", ax=ax)
 
-        #fig.tight_layout()
+        fig.tight_layout()
 
         ax.set_facecolor('k')
+        ax.text(0.7, 0.9, f"{episode_keys[-1]}", color="w", size=75, transform=ax.transAxes)
         fig.savefig(output_fname)
+        print(f"Saved to {output_fname}")
+        plt.close()
 
     # Otherwise, need to get fancy.
     elif plot_method == "bokeh":
@@ -468,7 +490,8 @@ def plot_cumulative_scene_network_graphs(
     plot_output_dir: str = "./",
     plot_main_char: bool = True,
     plot_minor_char: bool = False,
-    chars_to_remove: Optional[List[str]] = None
+    chars_to_remove: Optional[List[str]] = None,
+    name_for_ffmpeg: bool = False,
 ) -> None:
     """
     Given N episodes, plots N graphs depicting the number of interactions between characters.  That is, if passed 3
@@ -497,6 +520,10 @@ def plot_cumulative_scene_network_graphs(
     chars_to_remove : optional, list of strings
         Removes the specified characters from analysis.
 
+    name_for_ffmpeg : optional
+        If specified, then the names of the images will be adjusted to be in sequential numerical order rather than
+        ``sXXeXX.png``.
+
     Saves
     -----
 
@@ -513,7 +540,11 @@ def plot_cumulative_scene_network_graphs(
 
     # Now plot the network graph and remember the positions.
     final_episode_key = episodes[-1].key
-    output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
+
+    if name_for_ffmpeg:
+        output_fname = f"{plot_output_dir}/scene_graph_{len(episodes)}.png"
+    else:
+        output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
     node_pos = plot_scene_network_graph(
         characters, episodes, output_fname, plot_method="networkx", pos=None
     )
@@ -528,8 +559,12 @@ def plot_cumulative_scene_network_graphs(
     for episode_idx in range(len(episodes) - 1):
         these_episodes = episodes[0:episode_idx+1]
 
-        characters = generate_scene_interactions_for_graph(these_episodes, main_char, minor_char,
-                                                           chars_to_remove)
+        characters = generate_scene_interactions_for_graph(
+            these_episodes,
+            plot_main_char,
+            plot_minor_char,
+            chars_to_remove
+        )
 
         # For those characters that don't appear in the episode (but appear by final
         # episode plotted), add them to the ``characters`` dict with zeroed values.
@@ -539,7 +574,10 @@ def plot_cumulative_scene_network_graphs(
 
         # Now plot the network graph.
         final_episode_key = these_episodes[-1].key
-        output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
+        if name_for_ffmpeg:
+            output_fname = f"{plot_output_dir}/scene_graph_{len(these_episodes)}.png"
+        else:
+            output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
         _ = plot_scene_network_graph(
             characters, these_episodes, output_fname, plot_method="networkx", pos=node_pos
         )
@@ -610,23 +648,26 @@ if __name__ == "__main__":
 
     # Build a network graph of the scene interactions for each cumulative episode. That
     # is, create a graph that is s01e01, s01e01 + s01e02, s01e01 + s01e02 + s01e03, etc.
-    plot_cumulative_scene_network_graphs(episodes, "./cumu_plots", plot_main_char=True, plot_minor_char=True)
-
+    plot_cumulative_scene_network_graphs(
+        episodes,
+        "./cumu_plots",
+        plot_main_char=True,
+        plot_minor_char=True,
+        name_for_ffmpeg=True
+    )
 
     # Instead of breaking into episodes, can also distribute as characters.
     characters = c_utils.init_characters_in_episodes(episodes)
     c_utils.determine_lines_per_episode(episodes, characters)
 
-    #TODO Build a "All lines by character" property.
-
     # Determine the characters each character is in a scene with.
     c_utils.determine_scene_interaction(episodes, characters)
     characters_to_plot = c_utils.determine_character_classes(characters, main_char=True,
-                                                             minor_char=True)
+                                                             minor_char=False)
 
     # Let's remove some characters to make the plots look nicer.
-    to_remove = ["The Mountain"]
-    #to_remove = []
+    #to_remove = ["The Mountain"]
+    to_remove = []
     for character_name in to_remove:
         if character_name in characters_to_plot:
             characters_to_plot.remove(character_name)

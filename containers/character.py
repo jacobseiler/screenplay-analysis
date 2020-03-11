@@ -92,6 +92,18 @@ class Character(object):
     def num_scenes(self, num_scenes):
         self._num_scenes = num_scenes
 
+    @property
+    def episode_death(self):
+        """
+        string: Season and episode (in "sXXeXX" format) that the character died in. If the character does not die, the
+        entry is "alive".
+        """
+        return self._episode_death
+
+    @episode_death.setter
+    def episode_death(self, episode_death):
+        self._episode_death = episode_death
+
     def calc_unique_words(self):
 
         from collections import Counter
@@ -101,7 +113,6 @@ class Character(object):
         # For each episode, the spoken lines are kept in a list...
         # [line0, line1, line2, ..., lineN].
         for episode in self._episode_lines.keys():
-
             for line in self._episode_lines[episode]:
                 for word in line.split():
                     count[word] += 1

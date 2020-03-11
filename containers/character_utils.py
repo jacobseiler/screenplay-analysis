@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional
+
 from .character import Character
 
 
@@ -9,13 +11,13 @@ def init_characters_in_episodes(episodes):
     Parameters
     ----------
 
-    episodes: List of :py:class:`~Episode` instances
+    episodes : list of :py:class:`~Episode` instances
         Episodes that we are generating the characters for.
 
     Returns
     -------
 
-    characters: dict["Character_Name", :py:class:`~Character` instance]
+    characters : dict["Character_Name", :py:class:`~Character` instance]
         Initialized character instances.  Key is the name of the character.
     """
 
@@ -119,15 +121,20 @@ def determine_scene_interaction(episodes, characters, debug_name_one=None,
                         scene_dict[other_character_name] = 1
 
 
-def determine_character_classes(characters, main_char=False, minor_char=False,
-                                extras=False):
+def determine_character_classes(
+    characters: Dict[str, Character],
+    main_char: bool = False,
+    minor_char: bool = False,
+) -> Dict[str, Character]:
+    """
+    Given a dictionary of characters, fetches only the main/minor characters, depending who is specified.
+    """
 
     main_characters = [
-        "Daenerys", "Jon", "Arya", "Sansa", "The Mountain", "Tyrion", "Bran", "Cersei",
-        "Melisandre", "The Hound", "Khal Drogo", "Joffrey", "Brienne", "Theon", "Jaime",
+        "Daenerys", "Jon", "Arya", "Sansa", "Tyrion", "Bran", "Cersei",
+        "Melisandre", "The Hound", "Joffrey", "Brienne", "Theon", "Jaime",
         "Bronn", "Ramsay", "Littlefinger", "Varys", "Jorah", "Margaery", "Sam",
-        "Missandei", "Davos", "Ned", "Catelyn", "Tywin", "Robb", "Bronn", "Stannis",
-        "Tormund"
+        "Missandei", "Davos", "Ned", "Catelyn", "Tywin", "Robb", "Stannis", "Tormund"
     ]
 
     minor_characters = [
@@ -153,7 +160,27 @@ def determine_character_classes(characters, main_char=False, minor_char=False,
 # TODO: These should be ported into their own module and listed as "GoT_Names".
 # This way the user can load the desired names to populate the list.
 # Explicitly split into 'named_character' and 'NPC'?
-def normalize_name(character_name, allowed_double_names=None):
+def normalize_name(character_name: str, allowed_double_names: Optional[List[str]] = None) -> str:
+    """
+    Ensures consistency for a character's name.  For some scripts, "Jaime Lannister" is listed as "Jaime", "JAIME",
+    etc.
+
+    Parameters
+    ----------
+
+    character_name : string
+        The original name of the character as it appears in the script.
+
+    allowed_double_names : list of strings, optional
+        Some characters are allowed to have two names (e.g., "The Hound").  This parameter specifies those names.  If
+        ``None``, then uses the default values (see source code).
+
+    Returns
+    -------
+
+    character_name : string
+        The normalized name of the character.
+    """
 
     import string
     # First be consistent and capitalize the first letter in all names of a character.
@@ -223,10 +250,56 @@ def normalize_name(character_name, allowed_double_names=None):
         "Sparrow": "High Sparrow",
         "Blackfish": "Brynden",
         "Twyin": "Tywin", # Spelling lul.
-        "Rodrick": "Rodrik"  # Spelling.
+        "Rodrick": "Rodrik",  # Spelling.
+        "Oberyon": "Oberyn",
     }
 
     if character_name in name_map:
         character_name = name_map[character_name]
 
     return character_name
+
+def determine_character_death(characters: Dict[str, Character]) -> Dict[str, Character]:
+    """
+    Determines when each character died and updates the :py:attr:`~Character.episode_death` attribute.
+    """
+
+    deaths = {
+        "Daenerys": "s08e06",
+        "The Mountain": "s08e05",
+        "Cersei": "s08e05",
+        "Melisandre": "s08e03",
+        "The Hound": "s08e05",
+        "Khal Drogo": "s01e10",
+        "Joffrey": "s04e02",
+        "Theon": "s08e03",
+        "Jaime": "s08e05",
+        "Ramsay": "s06e08",
+        "Littlefinger": "s07e07",
+        "Varys": "s08e05",
+        "Jorah": "s08e03",
+        "Margaery": "s06e10",
+        "Missandei": "s08e04",
+        "Ned": "s01e10",
+        "Catelyn": "s03e09",
+        "Tywin": "s04e09",
+        "Robb": "s03e09",
+        "Stannis": "s05e10",
+
+        "Qybyrn": "s08e05",
+        "Pycelle": "s06e10",
+        "Ygritte": "s04e09",
+        "High Sparrow": "s06e10",
+        "Oberyn": "s04e08",
+        "Alliser": "s06e03",
+        "Renly": "s02e05",
+        "Maester Aemon": "s05e07",
+    }
+
+    for character_name, character in characters.items():
+        try:
+            character._episode_death = deaths[character_name]
+        except KeyError:
+            character._episode_death = "alive"
+
+    return characters
