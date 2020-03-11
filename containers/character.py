@@ -8,12 +8,15 @@ found in ``character_utils.py``.
 Author: Jacob Seiler.
 """
 
+from typing import Dict, List
+
+
 class Character(object):
     """
     Handles all of the data associated with an individual character.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         """
         Initialize empty lists and dictionaries.
 
@@ -25,27 +28,26 @@ class Character(object):
         """
 
         self._name = name
-        self._episode_lines = {}
-        self._unique_words = []
-        self._scene_appearance_dict = {}
+        self._episode_lines: Dict[str, List[str]] = {}
+        self._unique_words: List[str] = []
+        self._scene_appearance_dict: Dict[str, int] = {}
         self._num_scenes = 0
-
 
     @property
     def name(self):
         """
-        str: Name of the character.
+        str : Name of the character.
         """
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         self._name = name
 
     @property
     def episode_lines(self):
         """
-        dict[string, list of strings]: The lines spoken by the character in each episode.
+        dict[string, list of strings] : The lines spoken by the character in each episode.
         Key is "s{season_num}e{episode_num}" and the values are a list of lines spoken by
         the character in the episode.
 
@@ -55,7 +57,7 @@ class Character(object):
         return self._episode_lines
 
     @episode_lines.setter
-    def episode_lines(self, episode_lines):
+    def episode_lines(self, episode_lines: Dict[str, List[str]]):
         self._episode_lines = episode_lines
 
     @property
@@ -66,42 +68,42 @@ class Character(object):
         return self._unique_words
 
     @unique_words.setter
-    def unique_words(self, unique_words):
+    def unique_words(self, unique_words: List[str]):
         self._unique_words = unique_words
 
     @property
     def scene_appearance_dict(self):
         """
-        dict[string, int]: Number of times this character speaks in the same scene as
-        another character.  Key is the name of the other character.
+        dict[string, int] : Number of times this character speaks in the same scene as another character.  Key is the
+        name of the other character.
         """
         return self._scene_appearance_dict
 
     @scene_appearance_dict.setter
-    def scene_appearance_dict(self, appearance_dict):
+    def scene_appearance_dict(self, appearance_dict: Dict[str, int]):
         self._scene_appearance_dict = appearance_dict
 
     @property
     def num_scenes(self):
         """
-        int: Number of times character talks in scenes.
+        int : Number of times character talks in scenes.
         """
         return self._num_scenes
 
     @num_scenes.setter
-    def num_scenes(self, num_scenes):
+    def num_scenes(self, num_scenes: int):
         self._num_scenes = num_scenes
 
     @property
     def episode_death(self):
         """
-        string: Season and episode (in "sXXeXX" format) that the character died in. If the character does not die, the
+        string : Season and episode (in "sXXeXX" format) that the character died in. If the character does not die, the
         entry is "alive".
         """
         return self._episode_death
 
     @episode_death.setter
-    def episode_death(self, episode_death):
+    def episode_death(self, episode_death: str):
         self._episode_death = episode_death
 
     def calc_unique_words(self):

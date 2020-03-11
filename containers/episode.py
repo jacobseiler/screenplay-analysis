@@ -20,14 +20,14 @@ class Episode(object):
         Parameters
         ----------
 
-        season_num, episode_num: ints
+        season_num, episode_num : ints
             The season and episode numbers of this episode.
 
-        key: string
+        key : string
             A unique key for this episode. Used by indivual :py:class:`~Character` class
             instances to track the lines spoken in each episode.
 
-        script_path: string
+        script_path : string
             Path to where the script of this episode is stored. Used to read and parse the
             lines/scenes for the episode.
         """
@@ -51,7 +51,7 @@ class Episode(object):
     @property
     def season_num(self):
         """
-        int: The season number.
+        int : The season number.
         """
         return self._season_num
 
@@ -62,7 +62,7 @@ class Episode(object):
     @property
     def episode_num(self):
         """
-        int: The episode number.
+        int : The episode number.
         """
         return self._episode_num
 
@@ -73,7 +73,7 @@ class Episode(object):
     @property
     def character_lines(self):
         """
-        dict[string, list of strings]: Dictionary containing a list of lines spoken by
+        dict[string, list of strings] : Dictionary containing a list of lines spoken by
         each character. Key is the name of the character and the value are all lines
         spoken by that character in this episode.
         """
@@ -86,7 +86,7 @@ class Episode(object):
     @property
     def character_format(self):
         """
-        string: Key that specifies how each character line is identified in the script.
+        string : Key that specifies how each character line is identified in the script.
         Used to apply a regular expression across the script to extract the lines spoken
         by each character.
 
@@ -113,7 +113,7 @@ class Episode(object):
     @property
     def scene_format(self):
         """
-        string: Key that specifies how a scene change is identified within the script. Used to compute when a new scene
+        string : Key that specifies how a scene change is identified within the script. Used to compute when a new scene
         interaction between characters should begin.
 
         Possible Values

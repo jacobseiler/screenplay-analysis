@@ -1,3 +1,7 @@
+"""
+Functions to handle and investigate episodes.
+"""
+
 from typing import List
 
 from containers import Episode

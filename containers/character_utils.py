@@ -1,22 +1,25 @@
+"""
+Functions to handle and investigate characters throughout many episodes.
+"""
+
 from typing import Dict, List, Optional
 
-from .character import Character
+from containers.character import Character
+from containers.episode import Episode
 
 
-def init_characters_in_episodes(episodes):
+def init_characters_in_episodes(episodes: List[Episode]) -> Dict[str, Character]:
     """
     Generate a dictionary of :py:class:`~Character` instances for characters appearing in
     the given episodes.
 
     Parameters
     ----------
-
     episodes : list of :py:class:`~Episode` instances
         Episodes that we are generating the characters for.
 
     Returns
     -------
-
     characters : dict["Character_Name", :py:class:`~Character` instance]
         Initialized character instances.  Key is the name of the character.
     """
@@ -30,10 +33,10 @@ def init_characters_in_episodes(episodes):
         character_names.extend(characters_in_episode)
 
     # Enforce uniqueness.
-    character_names = set(character_names)
+    character_names_set = set(character_names)
 
     # Now go through each character, initialize a class instance, and add to the dict.
-    for character_name in character_names:
+    for character_name in character_names_set:
         character = Character(character_name)
 
         characters[character_name] = character
@@ -41,13 +44,12 @@ def init_characters_in_episodes(episodes):
     return characters
 
 
-def determine_lines_per_episode(episodes, characters):
+def determine_lines_per_episode(episodes: List[Episode], characters: List[Character]) -> None:
     """
     Determines the number of lines spoken by each character in specified episodes.
 
     Parameters
     ----------
-
     episodes : List of :py:class:`~Episode` instances
         The episodes we're analysing.
 
@@ -56,7 +58,6 @@ def determine_lines_per_episode(episodes, characters):
 
     Returns
     -------
-
     None.  The values of :py:attr:`~Character.episode_lines` are updated directly.
     """
 
@@ -75,18 +76,29 @@ def determine_lines_per_episode(episodes, characters):
             character.episode_lines[key_name] = lines_in_ep
 
 
-def determine_scene_interaction(episodes, characters, debug_name_one=None,
-                                debug_name_two=None):
+def determine_scene_interaction(
+    episodes: List[Episode],
+    characters: List[Character],
+    debug_name_one: Optional[str] = None,
+    debug_name_two: Optional[str] = None,
+) -> None:
     """
     For given episodes and characters, determine the number of scenes that they appear together.
 
     Parameters
     ----------
+    episodes : List of :py:class:`~Episode` instances
+        The episodes to analyse the interactions for.
 
+    characters : List of :py:class:`~Character` instances
+        The characters to analyse the interactions for.
+
+    debug_name_one, debug_name_two : strings, optional
+        If both of these character names are specified, then all interactions between these two characters are printed
+        to stdout.
 
     Returns
     -------
-
     None.  The values of :py:attr:`~Character.scene_appearance_dict` are updated directly.
     """
 
@@ -166,7 +178,6 @@ def normalize_name(character_name: str, allowed_double_names: Optional[List[str]
 
     Parameters
     ----------
-
     character_name : string
         The original name of the character as it appears in the script.
 
@@ -176,7 +187,6 @@ def normalize_name(character_name: str, allowed_double_names: Optional[List[str]
 
     Returns
     -------
-
     character_name : string
         The normalized name of the character.
     """
