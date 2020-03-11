@@ -105,8 +105,7 @@ def determine_scene_interaction(episodes, characters, debug_name_one=None,
 
                 for other_character_name in scene.characters:
 
-                    if character_name == debug_name_one and \
-                        other_character_name == debug_name_two:
+                    if character_name == debug_name_one and other_character_name == debug_name_two:
                         print(episode.scene_lines[scene_num])
                         print(f"{episode.season_num} {episode.episode_num}")
 
@@ -125,7 +124,7 @@ def determine_character_classes(
     characters: Dict[str, Character],
     main_char: bool = False,
     minor_char: bool = False,
-) -> Dict[str, Character]:
+) -> List[str]:
     """
     Given a dictionary of characters, fetches only the main/minor characters, depending who is specified.
     """
@@ -249,7 +248,7 @@ def normalize_name(character_name: str, allowed_double_names: Optional[List[str]
         "Gregor": "The Mountain",
         "Sparrow": "High Sparrow",
         "Blackfish": "Brynden",
-        "Twyin": "Tywin", # Spelling lul.
+        "Twyin": "Tywin",  # Spelling lul.
         "Rodrick": "Rodrik",  # Spelling.
         "Oberyon": "Oberyn",
     }
@@ -258,6 +257,7 @@ def normalize_name(character_name: str, allowed_double_names: Optional[List[str]
         character_name = name_map[character_name]
 
     return character_name
+
 
 def determine_character_death(characters: Dict[str, Character]) -> Dict[str, Character]:
     """

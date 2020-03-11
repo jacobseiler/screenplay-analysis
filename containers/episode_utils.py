@@ -1,4 +1,9 @@
-def determine_num_episodes_season(episodes):
+from typing import List
+
+from containers import Episode
+
+
+def determine_num_episodes_season(episodes: List[Episode]):
     """
     Determine the number of episodes in each season from a list of episodes.
     """
@@ -18,7 +23,6 @@ def determine_num_episodes_season(episodes):
             # If so, add the current totals to the list.
             season_labels.append(f"Season {current_season}")
             num_episodes_season.append(num_episodes)
-
 
             # Then re-initializze for next season.
             num_episodes = 1

@@ -112,24 +112,65 @@ class Episode(object):
 
     @property
     def scene_format(self):
+        """
+        string: Key that specifies how a scene change is identified within the script. Used to compute when a new scene
+        interaction between characters should begin.
+
+        Possible Values
+        ---------------
+        SCENE denotes that scene changes are marked with the words 'Scene shifts' or '## TITLE SEQUENCE'
+
+        DASHES denotes that scene changes are marked with a row of '\- - - - -' OR a row of '\----'.
+
+        STARS denotes that scene changes are marked with '* * *'.
+
+        INT/EXT denotes that scene changes are marked with either the word 'INT' or 'EXT' (capitals) or use of the word
+        'Interior' or 'Exterior'. These words do not appear elsewhere in the script.
+
+        CUT denotes that scene scene changes are marked with the words 'CUT TO'.
+
+        INT/EXT/CUT denotes that the scene changes are marked with 'INT' or 'EXT' or 'CUT TO'.
+
+        ONE_SCENE denotes where the entire episode can be considered a single scene. Useful for episodes such as "The
+        Long Night".
+        """
         return self._scene_format
 
     @scene_format.setter
     def scene_format(self, scene_format):
+        # TODO: Add a check to ensure the format is only one of the valid ones.
         self._scene_format = scene_format
 
     @property
     def key(self):
+        """
+        str : A unique key for the episode. Used by indivual :py:class:`~Character` class instances to track the lines
+        spoken in each episode.
+
+        Value is of the form ``sXXeYY`` where ``XX`` is the season number and ``YY`` is the episode number.
+        """
         return self._key
+
+    @key.setter
+    def key(self, key):
+        self._key = key
 
     @property
     def script_path(self):
+        """
+        str: Path to where the script of this episode is stored. Used to read and parse the lines/scenes for the
+        episode.
+        """
         return self._script_path
+
+    @script_path.setter
+    def script_path(self, script_path):
+        self._script_path = script_path
 
     @property
     def scenes(self):
         """
-        list of :py:class`~Scene` instances: The scenes in this episode.
+        list of :py:class`~Scene` instances : The scenes in this episode.
         """
         return self._scenes
 
@@ -140,7 +181,7 @@ class Episode(object):
     @property
     def scene_lines(self):
         """
-        list of lists of :py:class:`~Line` instances: For each scene within the episode,
+        list of lists of :py:class:`~Line` instances : For each scene within the episode,
         contains a list of :py:class:`~Line` instances for all lines in that scene.
         """
         return self._scene_lines
@@ -152,7 +193,7 @@ class Episode(object):
     @property
     def scene_characters(self):
         """
-        list of list of strings: For each scene within the episode, contains a list of
+        list of list of strings : For each scene within the episode, contains a list of
         character in that scene.
         """
         return self._scene_characters
@@ -164,11 +205,23 @@ class Episode(object):
     @property
     def num_scenes(self):
         """
-        int: Number of scenes in the episode.
+        int : Number of scenes in the episode.
         """
         return len(self._scenes)
 
+    @num_scenes.setter
+    def num_scenes(self, num_scenes):
+        self._num_scenes = num_scenes
+
     def summarise_episode(self, verbose=False):
+        """
+        Provides a brief summary of the episode.  If ``verbose`` is specified, also shows all lines spoken by all
+        characters.
+
+        TODO
+        ----
+        Add option to summarize for specific character(s).
+        """
 
         print("")
         print("==============================")
