@@ -1,12 +1,42 @@
-import html2text
+"""
+This module focuses on scraping and saving Game of Thrones scripts.  These scripts were found through the
+``genius.com/albums/Game-of-thrones`` website. All scripts are saved to the ``./scripts/`` directory (which is created
+if it does not exist already).
+
+Author: Jacob Seiler
+"""
+
+import os
 import re
-import requests
+from typing import List
+
 import numpy as np
+import requests
+
+import html2text
 
 
-def scrape_html_and_save(url, fname_out, remove_brackets=False):
+def scrape_html_and_save(url: str, fname_out: str, remove_brackets: bool = False) -> None:
+    """
+    Scrapes a specified URL and saves the HTML to file.
 
-    # Set some options for parsing the HTML to text.
+    Parameters
+    ----------
+    url
+        The URL that is being scraped from.
+
+    fname_out
+        The name of the file the formatted HTML will be saved to.
+
+    remove_brackets : optional
+        Removes the instances in the HTML of the form ``(WORD)``. These are replaced with empty lines.
+
+    Returns
+    -------
+    None.  The HTML is saved to the ``fname_out``.
+    """
+
+    # Set some options for parsing the HTML to text. Idk if most of these actually do anything.
     parser = html2text.HTML2Text()
     parser.unicode_snob = True
     parser.body_width = 0
@@ -19,13 +49,11 @@ def scrape_html_and_save(url, fname_out, remove_brackets=False):
         print(f"Encountered error while fetching webpage {url}")
         raise RuntimeError
 
-    # Snip out all that HTML nonsense and leave just the text (this will be the script
-    # itself).
+    # Snip out all that HTML nonsense and leave just the text (this will be the script itself).
     data = r.text
     text = parser.handle(data)
 
-    # If we are removing brackets, we're going to open it up later and save again. So use
-    # a tmp name.
+    # If we are removing brackets, we're going to open it up later and save again. So use a tmp name.
     if remove_brackets:
         fname = f"{fname_out}_tmp.txt"
     else:
@@ -35,15 +63,14 @@ def scrape_html_and_save(url, fname_out, remove_brackets=False):
         f.write(text)
     print(f"Saved to {fname}")
 
-    # For some scripts, there are obnoxious brackets that specify who characters are
-    # talking to.  These will mess with statistics and processing so we need to remove
-    # them.
+    # For some scripts, there are obnoxious brackets that specify who characters are talking to.  These will mess with
+    # statistics and processing so we need to remove them.
     if remove_brackets:
 
         import os
 
         # We will seek occurences of the form "(<ANYTHING>)".
-        pattern = "\([^)]*\)"
+        pattern = "\([^)]*\)"  # noqa: W605
 
         # Open the file and replace.
         new_fname = f"{fname_out}.txt"
@@ -58,17 +85,34 @@ def scrape_html_and_save(url, fname_out, remove_brackets=False):
         print("Deleted old tmp file.")
 
 
-def generate_episode_names(url, episodes_fname, debug=False):
+def generate_episode_names(url: str, output_fname: str, debug: bool = False) -> List[str]:
+    """
+    Fetches and saves the name of the episodes.
+
+    Parameters
+    ----------
+    url
+        The URL specifying the website containing the list of all episodes.
+
+    output_fname
+        The name of the file where the episodes will be saved to.
+
+    debug : optional
+        If specified, prints out some messages to help with debugging.
+
+    Returns
+    -------
+    episode_names
+        The names of all the episodes.  These may have to be processed further to provide a proper URL.
+    """
 
     # First scrape the URL and turn the ugly HTML to nicely formatted text.
-    scrape_html_and_save(url, fname_out)
+    scrape_html_and_save(url, output_fname)
 
+    # Now its time to go through the episodes and format the names of the episodes a bit.
     episode_names = []
-    episodes_fname = f"{episodes_fname}.txt"
-
-    with open(episodes_fname, "r") as f:
+    with open(output_fname, "r") as f:
         for line in f:
-
             # Ignore empty lines.
             try:
                 _ = (line.split())[0]
@@ -101,19 +145,20 @@ def generate_episode_names(url, episodes_fname, debug=False):
 
 if __name__ == "__main__":
 
+    output_dir = "./scripts"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     seasons = np.arange(8, 9)
     for season_num in seasons:
 
         # First find the names of the episodes in this Season.
         url = f"https://genius.com/albums/Game-of-thrones/Season-{season_num}-scripts"
-        fname_out = f"./scripts/season-{season_num}-episodes"
+        fname_out = f"{output_dir}/season-{season_num}-episodes.txt"
         episode_names = generate_episode_names(url, fname_out)
 
-        # Then go through each episode and grab its scripts.
+        # Then go through each episode and grab its script.
         for episode_num, episode_name in enumerate(episode_names):
-
-            if episode_num not in [2, 4]:
-                continue
 
             # For the URL, the episode names use '-' instead of spaces and use lower case
             # letter.
@@ -124,5 +169,5 @@ if __name__ == "__main__":
             url_episode_name = url_episode_name.replace(",", "").lower()
 
             url = f"https://genius.com/Game-of-thrones-{url_episode_name}-annotated"
-            fname_out = f"./scripts/s{season_num:02}e{episode_num+1:02}"
+            fname_out = f"{output_dir}/s{season_num:02}e{episode_num+1:02}"
             scrape_html_and_save(url, fname_out, remove_brackets=True)

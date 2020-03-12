@@ -1,25 +1,39 @@
+"""
+This module contains the ``Scene`` class.  The ``Scene`` class contains all the data associated with a single scene.
+This information includes the lines that have been spoke, the name of each character that speaks during the scene, and
+the season + episode number the scene belongs to.
+
+Author: Jacob Seiler
+"""
+
+from typing import List
+
+
 class Scene(object):
 
-    def __init__(self, season_num, episode_num):
+    def __init__(self, season_num: int, episode_num: int):
 
-        self._lines = []
-        self._characters = []
+        self._lines: List[str] = []
+        self._characters: List[str] = []
 
         self._season_num = season_num
         self._episode_num = episode_num
 
     @property
     def lines(self):
+        """
+        list of strings : The lines spoken by all characters during the scene.
+        """
         return self._lines
 
     @lines.setter
-    def lines(self, lines):
+    def lines(self, lines: List[str]):
         self._lines = lines
 
     @property
     def characters(self):
         """
-        list of strings: Name of each character that talks in the scene.
+        list of strings : Name of each character that talks in the scene.
         """
         # Go through each line in the scene, and then build a list of all the characters
         # that spoke.
@@ -34,23 +48,29 @@ class Scene(object):
         return unique_chars
 
     @characters.setter
-    def characters(self, characters):
+    def characters(self, characters: List[str]):
         self._characters = characters
 
     @property
     def season_num(self):
+        """
+        int : The season number the scene belongs to.
+        """
         return self._season_num
 
     @season_num.setter
-    def season_num(self, season_num):
+    def season_num(self, season_num: int):
         self._season_num = season_num
 
     @property
     def episode_num(self):
+        """
+        int : The episode number the scene belongs to.
+        """
         return self._episode_num
 
     @episode_num.setter
-    def episode_num(self, episode_num):
+    def episode_num(self, episode_num: int):
         self._episode_num = episode_num
 
     def __repr__(self):
