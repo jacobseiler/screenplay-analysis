@@ -2,12 +2,15 @@
 screenplay-analysis
 *******************
 
+.. figure:: got.gif
+   The most interesting thing that I made.
+
 Description
 ===========
 
 This repo contains code intended to read and parse various scripts (television, movies, plays, etc).  For now, it has
 only been formatted to run on Game of Thrones scripts through the
-`Genius website<https://genius.com/albums/Game-of-thrones>`_.  However, it contains the foundations for extending to
+`Genius website <https://genius.com/albums/Game-of-thrones>`_.  However, it contains the foundations for extending to
 other scripts with (hopefully) minimal fuss.  Please fork and adjust it to your heart's desire!
 
 Disclaimer
@@ -93,3 +96,13 @@ and **Stannis** initially have a very thick edge that connect them.  As time pro
 other characters, this thickness decreases until reaches a more stable level.  This behaviour allows you to see how the
 interactions between two characters, in addition to how they're interacting in a global sense, evolves over time. For
 example, even by **s08e06**, the link between **Tormund** and **Ygritte** is still appreciable!
+
+
+<script src="http://vjs.zencdn.net/4.0/video.js"></script>
+
+<video id="pelican-installation" class="video-js vjs-default-skin" controls
+preload="auto" width="683" height="384" poster="/static/screencasts/pelican-installation.png"
+data-setup="{}">
+<source src="/static/screencasts/pelican-installation.mp4" type='video/mp4'>
+</video>
+
