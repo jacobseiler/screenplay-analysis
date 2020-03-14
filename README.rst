@@ -95,13 +95,3 @@ and **Stannis** initially have a very thick edge that connect them.  As time pro
 other characters, this thickness decreases until reaches a more stable level.  This behaviour allows you to see how the
 interactions between two characters, in addition to how they're interacting in a global sense, evolves over time. For
 example, even by **s08e06**, the link between **Tormund** and **Ygritte** is still appreciable!
-
-
-<script src="http://vjs.zencdn.net/4.0/video.js"></script>
-
-<video id="pelican-installation" class="video-js vjs-default-skin" controls
-preload="auto" width="683" height="384" poster="/static/screencasts/pelican-installation.png"
-data-setup="{}">
-<source src="/static/screencasts/pelican-installation.mp4" type='video/mp4'>
-</video>
-
