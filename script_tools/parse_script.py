@@ -1,21 +1,103 @@
-from containers.character import Character
+"""
+This module parses a script and places all of the lines, episodes, characters, and scenes into the appropriate classes.
+
+Author: Jacob Seiler
+"""
+
 from containers.episode import Episode
 from containers.line import Line
 from containers.scene import Scene
 
+from typing import List
 import re
 
-import numpy as np
 import pandas as pd
 
-#TODO
-# * Don't hard code the path for the scripts.
+
+def parse_all_eps(
+    season_nums: List[int], episode_nums: List[int], debug: bool = False, script_dir: str = "./script_tools/scripts"
+) -> List[Episode]:
+    """
+    Parse all the episodes in the given seasons.  That is, fetches all of the characters, lines, and scenes for each
+    episode.
+
+    Parameters
+    ----------
+    season_num, episode_nums
+        The season and episodes that will be parsed.
+
+    debug
+        If specified, prints some messages that may help with debugging.
+
+    Returns
+    -------
+    episodes
+        The episodes with all of the information pulled out.
+
+    Notes
+    -----
+    If a season does not have a specified episode, it will be skipped. Hence, ``episode_nums`` should be the largest
+    episode number across all seasons. Episodes will be skipped if there is not corresponding entry in ``formats.txt``.
+    """
+
+    episodes = []
+
+    # Each episode can be parsed slightly differently. This pandas dataframe will provide the keys used to determine
+    # how to parse each episode.
+    formats = pd.read_csv("./formats.txt", sep=" ", comment="#")
+
+    for season_num in season_nums:
+        for episode_num in episode_nums:
+
+            # Need the formats on how we parse the characters and scenes.
+            episode_format = formats[(formats["season_num"] == season_num) & (formats["episode_num"] == episode_num)]
+
+            # Some seasons don't have episodes 1-10. So try this and skip if we don't have.
+            try:
+                character_format = str(episode_format["character_format"].values[0])
+                scene_format = str(episode_format["scene_format"].values[0])
+            except IndexError:
+                continue
+
+            key = f"s{season_num:02}e{episode_num:02}"
+            script_path = f"{script_dir}/{key}.txt"
+
+            # Initialize class instance. This does not yet parse it but merely sets up the initial variables.
+            episode = Episode(season_num, episode_num, key, script_path)
+
+            episode.character_format = character_format
+            episode.scene_format = scene_format
+
+            episodes.append(episode)
+
+    # Now go through each episode and parse the script.
+    for episode in episodes:
+        parse_episode(episode.script_path, episode, debug)
+
+    return episodes
 
 
-def parse_episode(fname, episode, debug=False):
+def parse_episode(fname: str, episode: Episode, debug: bool = False) -> None:
+    """
+    Goes through an episode script and determines all of the lines, characters, and scenes.
 
-    # There may be some episodes that don't have scripts yet.  Skip these and print a
-    # warning.
+    Parameters
+    ----------
+    fname
+        Path to the script.
+
+    episode
+        Episode instance that will be updated.
+
+    debug
+        If specified, prints some messages that may help with debugging.
+
+    Returns
+    -------
+    None. ``episode`` is updated directly.
+    """
+
+    # There may be some episodes that don't have scripts yet.  Skip these and print a message.
     if episode.character_format == "NONE" and episode.scene_format == "NONE":
         print(f"Script has been flagged as not existing for s{episode.season_num:02}"
               f"e{episode.episode_num:02}. Skipping.")
@@ -38,22 +120,23 @@ def parse_episode(fname, episode, debug=False):
             except IndexError:
                 continue
 
-            # Parse the line to see if a character spoke it (and add to the appropriate
-            # character).
+            # Parse the line to see if a character spoke it (and add to the appropriate character).
             parse_character_line(line, episode, debug=debug)
 
     # Add the final scene to the episode.
     episode.scenes.append(episode.current_scene)
 
 
-def parse_character_line(line, episode, debug=False):
+def parse_character_line(line: str, episode: Episode, debug: bool = False) -> None:
+    """
+    Parses a single line of text from the script and adds the data to ``episode``.
+    """
 
     if debug:
         print("Line {0}".format(line))
 
-    # The format of the character line will change slightly depending upon the episode and
-    # season.  Let's use a dedicated function to separate the line into the character name
-    # and their spoken line.
+    # The format of the character line will change slightly depending upon the episode and season.  Separate the line
+    # into the character name and their spoken line.
     spoken_line = regex_character_line(line, episode, debug=debug)
 
     # A character didn't speak this line.
@@ -74,8 +157,7 @@ def parse_character_line(line, episode, debug=False):
 
         return
 
-    # At this point, we have verified that a character spoke the line. Add some extra info
-    # for further tracking.
+    # At this point, we have verified that a character spoke the line. Add some extra info for further tracking.
     spoken_line.season_num = episode.season_num
     spoken_line.episode_num = episode.episode_num
 
@@ -92,12 +174,12 @@ def parse_character_line(line, episode, debug=False):
     # Update the scene this character spoke in.
     episode.current_scene.lines.append(spoken_line)
 
-    if character_name == "King's":
-        print(f"{episode.season_num} {episode.episode_num}")
-        print(spoken_line.spoken_line)
 
-
-def determine_if_scene_change(line, episode, debug=False):
+def determine_if_scene_change(line: str, episode: Episode, debug: bool = False) -> bool:
+    """
+    Determines if ``line`` corresponds to a scene change. This determination is based on how a scene change is defined
+    as based on the format in ``formats.txt`` and stored in :py:attr:`~containers.episode.scene_format`.
+    """
 
     scene_change = False
 
@@ -105,7 +187,7 @@ def determine_if_scene_change(line, episode, debug=False):
         if "Scene shift" in line or "Blackout" in line or "scene" in line.lower():
             scene_change = True
     elif episode.scene_format == "DASHES":
-        if "\- - -" in line or "\---" in line:
+        if "\- - -" in line or "\---" in line:  # noqa: W605
             scene_change = True
     elif episode.scene_format == "STARS":
         if "* * *" in line or "***" in line:
@@ -123,13 +205,33 @@ def determine_if_scene_change(line, episode, debug=False):
     return scene_change
 
 
-def regex_character_line(line, episode, debug=False):
+def regex_character_line(line: str, episode: Episode, debug: bool = False) -> Line:
+    """
+    Parses a single line spoken by a character to determine the name of the character speaking and the actual line
+    spoken.
+
+    Parameters
+    ----------
+    line
+        The character name and the line that was spoken by the character.
+
+    episode
+        The episode instance that this line was spoken in.
+
+    debug : optional
+        If specified, prints out some messages that may be useful for debugging.
+
+    Returns
+    -------
+    spoken_line
+        The line alongside the name of the character bundled into a :py:class:`~containers.line.Line` instance.
+    """
 
     # These are all scene descriptions.
-    if line[0] == "[" or line[0] == "_" or "CUT TO" in line or "_CUT" in line \
-                    or "INT" in line or "EXT" in line:
+    if line[0] == "[" or line[0] == "_" or "CUT TO" in line or "_CUT" in line or "INT" in line or "EXT" in line:
         return None
 
+    # These could probably be bundled into a single function and be smarter. But eh.
     if episode.character_format == "**CHARACTER_NAME:**":
         spoken_line = parse_stars_character_line(line, debug=debug)
     elif episode.character_format == "CHARACTER_NAME:":
@@ -139,11 +241,13 @@ def regex_character_line(line, episode, debug=False):
               "is {episode.character_format}. This is not a recognised format.")
         raise ValueError
 
-
     return spoken_line
 
 
-def parse_capital_character_line(line, debug=False):
+def parse_capital_character_line(line: str, debug: bool = False) -> Line:
+    """
+    Parse a line where the line start with ``CHARACTER_NAME:``.
+    """
 
     # A line spoken by a character will start with "CHARACTER_NAME:".
 
@@ -188,17 +292,19 @@ def parse_capital_character_line(line, debug=False):
 
     # At this point we're sure it was an actual line. So instantiate a Line instance and
     # return it.
-    _line = Line(character_name, spoken_line)
+    line = Line(character_name, spoken_line)
 
     if debug:
         print(f"Character name {character_name}")
         print(f"Spoken line {spoken_line}")
 
-    return _line
-
+    return line
 
 
 def parse_stars_character_line(line, debug=False):
+    """
+    Parse a line where the line start with ``**Character name:**``.
+    """
 
     # A line spoken by a character will start with "**Character name:**".
     # Be careful, sometimes the colon is inside the ** or outside with a space...
@@ -235,8 +341,7 @@ def parse_stars_character_line(line, debug=False):
         character_name = filtered_line[1]
         spoken_line = filtered_line[2]
     else:
-        print("line is {0}\tregex line is {1}\tfiltered line is {2}".format(line,
-            character_line, filtered_line))
+        print("line is {0}\tregex line is {1}\tfiltered line is {2}".format(line, character_line, filtered_line))
         raise ValueError
 
     # Now there is an annoying "\n" at the end of each line. Eliminate it...
@@ -247,46 +352,6 @@ def parse_stars_character_line(line, debug=False):
 
     # At this point we're sure it was an actual line. So instantiate a Line instance and
     # return it.
-    _line = Line(character_name, spoken_line)
+    line = Line(character_name, spoken_line)
 
-    return _line
-
-
-def parse_all_eps(season_nums, episode_nums, debug=False):
-
-    episodes = []
-
-    # Each episode can be parsed slightly differently. This pandas dataframe will provide
-    # the keys used to determine how to parse each episode.
-    formats = pd.read_csv("./formats.txt", sep=" ", comment="#")
-
-    for season_num in season_nums:
-        for episode_num in episode_nums:
-
-            # Need the formats on how we parse the characters and scenes.
-            episode_format = formats[(formats["season_num"] == season_num) & \
-                                        (formats["episode_num"] == episode_num)]
-
-            # Some seasons don't have episodes 1-10. So try this and skip if we don't
-            # have.
-            try:
-                character_format = str(episode_format["character_format"].values[0])
-                scene_format = str(episode_format["scene_format"].values[0])
-            except IndexError:
-                continue
-
-            key = f"s{season_num:02}e{episode_num:02}"
-            script_path = f"./script_tools/scripts/{key}.txt"
-
-            episode = Episode(season_num, episode_num, key, script_path)
-
-            episode.character_format = character_format
-            episode.scene_format = scene_format
-
-            episodes.append(episode)
-
-    # Now go through each episode and parse the script.
-    for episode in episodes:
-        parse_episode(episode.script_path, episode, debug)
-
-    return episodes
+    return line

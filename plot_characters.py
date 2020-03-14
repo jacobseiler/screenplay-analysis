@@ -1,22 +1,22 @@
+import math
+import os
+from typing import Dict, List, Optional
+
+import matplotlib
+import matplotlib.patheffects as PathEffects
+import networkx as nx
+import numpy as np
+from matplotlib import pyplot as plt
+from tqdm import tqdm
+
 import containers.character_utils as c_utils
 import containers.episode_utils as e_utils
 from containers.character import Character
 from containers.episode import Episode
 from script_tools.parse_script import parse_all_eps
-
-from typing import Dict, List, Optional
-
-import matplotlib.patheffects as PathEffects
-import math
-import matplotlib
-import numpy as np
-from matplotlib import pyplot as plt
-from tqdm import tqdm
+from wordcloud import STOPWORDS, WordCloud
 
 colors = ["r", "b", "g", "c", "m"]
-
-# TODO
-# * Don't force "plots" directory as output.  If I do, check and make it doesn't exist.
 
 
 def adjust_legend(ax, location="upper right", scatter_plot=False):
@@ -207,9 +207,7 @@ def plot_line_count_hist(
 
 
 def plot_wordcloud_character(episodes, plot_output_path, plot_output_format="png"):
-
-    from wordcloud import WordCloud, STOPWORDS
-
+1
     stopwords = set(STOPWORDS)
     additional_stopwords = ["will"]
     for word in additional_stopwords:
@@ -300,8 +298,6 @@ def plot_scene_network_graph(
     characters = c_utils.determine_character_death(characters)
 
     episode_keys = [episode.key for episode in episodes]
-
-    import networkx as nx
 
     if plot_method == "bokeh":
         from bokeh.io import save, output_file
@@ -638,6 +634,14 @@ def generate_scene_interactions_for_graph(
 
 
 if __name__ == "__main__":
+
+    output_dir = "./cumu_plots"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    output_dir = "./plots"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     # Parse all the episodes we desire.
     season_nums = np.arange(1, 9)

@@ -4,7 +4,7 @@ Functions to handle and investigate episodes.
 
 from typing import List
 
-from containers import Episode
+from containers.episode import Episode
 
 
 def determine_num_episodes_season(episodes: List[Episode]):
