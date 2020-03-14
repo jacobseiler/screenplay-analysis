@@ -3,7 +3,6 @@ screenplay-analysis
 *******************
 
 .. figure:: got.gif
-   The most interesting thing that I made.
 
 Description
 ===========
