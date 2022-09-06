@@ -207,7 +207,7 @@ def plot_line_count_hist(
 
 
 def plot_wordcloud_character(episodes, plot_output_path, plot_output_format="png"):
-1
+
     stopwords = set(STOPWORDS)
     additional_stopwords = ["will"]
     for word in additional_stopwords:
@@ -302,7 +302,7 @@ def plot_scene_network_graph(
     if plot_method == "bokeh":
         from bokeh.io import save, output_file
         from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, BoxZoomTool, ResetTool, TapTool, PanTool
-        from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges
+        from bokeh.models.graphs import from_networkx, EdgesAndLinkedNodes
         from bokeh.palettes import Spectral4
 
     if characters_to_plot is None:
@@ -388,7 +388,9 @@ def plot_scene_network_graph(
         # their node.
         label_size_list = []
 
+        print(node_size_list)
         valid_nodes = np.where(np.array(node_size_list) > 0)[0]
+        print(valid_nodes)
         min_node_size = min(np.array(node_size_list)[valid_nodes]) + 100
         max_node_size = max(node_size_list) + 100
 
@@ -469,7 +471,7 @@ def plot_scene_network_graph(
         graph_renderer.edge_renderer.selection_glyph = MultiLine(line_color=Spectral4[2],
                                                        line_alpha=0.8, line_width="weight")
 
-        graph_renderer.selection_policy = NodesAndLinkedEdges()
+        graph_renderer.selection_policy = EdgesAndLinkedNodes()
 
         plot.renderers.append(graph_renderer)
 
@@ -488,6 +490,7 @@ def plot_cumulative_scene_network_graphs(
     plot_minor_char: bool = False,
     chars_to_remove: Optional[List[str]] = None,
     name_for_ffmpeg: bool = False,
+    plot_method: str = "bokeh",
 ) -> None:
     """
     Given N episodes, plots N graphs depicting the number of interactions between characters.  That is, if passed 3
@@ -537,13 +540,17 @@ def plot_cumulative_scene_network_graphs(
     # Now plot the network graph and remember the positions.
     final_episode_key = episodes[-1].key
 
+    file_extensions: Dict[str, str] = {"networkx": "png", "bokeh": "html"}
+    file_extension: str = file_extensions[plot_method]
+
     if name_for_ffmpeg:
-        output_fname = f"{plot_output_dir}/scene_graph_{len(episodes)}.png"
+        output_fname = f"{plot_output_dir}/scene_graph_{len(episodes)}.{file_extension}"
     else:
-        output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.png"
+        output_fname = f"{plot_output_dir}/scene_graph_{final_episode_key}.{file_extension}"
     node_pos = plot_scene_network_graph(
-        characters, episodes, output_fname, plot_method="networkx", pos=None
+        characters, episodes, output_fname, plot_method=plot_method, pos=None
     )
+    exit()
 
     # When plotting the other episodes, we will want to plot ALL characters, regardless of
     # if they appear in the episodes. For characters we don't appear, their node/edge size
